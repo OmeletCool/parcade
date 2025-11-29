@@ -1,2 +1,2 @@
-import pyarcade
+import arcade
 import sys
