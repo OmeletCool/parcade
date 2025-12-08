@@ -8,9 +8,13 @@ class Button(UITextureButton):
         self.game = game
         texture = arcade.load_texture(
             "resources/camera_button_pro_version.png")
+        self.x = x
+        self.y = y
+        self.w = width
+        self.h = height
 
-        super().__init__(texture=texture, x=x, y=y,
-                         text='папер2', width=width, height=height)
+        super().__init__(texture=texture, x=self.x, y=self.y,
+                         text='папер2', width=self.w, height=self.h)
 
     def on_click(self, event):
         self.booyah()
@@ -19,6 +23,12 @@ class Button(UITextureButton):
 
         self.game.background_color = (random.randint(
             0, 255), random.randint(0, 255), random.randint(0, 255))
+
+    def set_all(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
 
 
 class MainMenu(arcade.Window):
@@ -33,19 +43,19 @@ class MainMenu(arcade.Window):
         self.gui_manager.enable()
         anchor_layout = UIAnchorLayout()
         self.button = Button(self, self.w // 2, self.h // 2)
+        self.extra_paper = Button(self, random.randint(0, self.w), random.randint(
+            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2))
         anchor_layout.add(self.button)
+        anchor_layout.add(self.extra_paper)
         self.gui_manager.add(anchor_layout)
 
     def on_draw(self):
         self.clear()
-        # arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(
-        #     self.w // 2, self.h // 2, self.w - 40, self.w - 40))
-        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
-            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
-        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
-            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
-        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
-            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
             0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
         self.gui_manager.draw()
+
+    def on_update(self, delta_time):
+        self.extra_paper.set_all(random.randint(
+            0, self.w), random.randint(0, self.h), random.randint(
+            0, self.w), random.randint(0, self.h))
