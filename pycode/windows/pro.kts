@@ -1,0 +1,29 @@
+val name = "Kotlin" // Неизменяемая (константа)
+var version = 1.9 // Изменяемая
+
+// 2. Вывод в консоль с интерполяцией
+println("Привет, мир! Это $name, версия $version") // Вывод: Привет, мир! Это Kotlin, версия 1.9
+
+// 3. Работа со списками
+val fruits = listOf("Яблоко", "Банан", "Апельсин")
+println("Фрукты: $fruits")
+
+// 4. Цикл for
+for (fruit in fruits) {
+    println("Любимый фрукт: $fruit")
+}
+
+// 5. Класс (объектно-ориентированное программирование)
+class User(val username: String, var isOnline: Boolean) {
+    fun greet() {
+        println("Пользователь $username сейчас онлайн: $isOnline")
+    }
+}
+
+// 6. Создание и использование объекта класса
+val user1 = User("Alice", true)
+user1.greet() // Вывод: Пользователь Alice сейчас онлайн: true
+
+val user2 = User("Bob", false)
+user2.isOnline = true // Изменение свойства
+user2.greet() // Вывод: Пользователь Bob сейчас онлайн: true
