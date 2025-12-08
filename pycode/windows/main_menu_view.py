@@ -6,13 +6,12 @@ class MainMenu(arcade.Window):
         super().__init__(width, height, title)
         self.w = width
         self.h = height
-        # Загружаем текстуру (изображение)
         self.texture = arcade.load_texture(
-            ":resources:/images/backgrounds/abstract_2.jpg")
+            "resources/camera_button_pro_version.png")
+        arcade.set_background_color(arcade.color.BABY_BLUE_EYES)
 
     def on_draw(self):
         self.clear()
 
-        # Отрисовываем изображение во весь экран
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(
-            self.w // 2, self.h // 2, self.w, self.h))
+            self.w // 2, self.h // 2, self.w - 40, self.w - 40))
