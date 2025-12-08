@@ -42,4 +42,10 @@ class MainMenu(arcade.Window):
         #     self.w // 2, self.h // 2, self.w - 40, self.w - 40))
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
             0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
+        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
+            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
+        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
+            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
+        arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(random.randint(0, self.w), random.randint(
+            0, self.h), random.randint(0, self.w // 2), random.randint(0, self.h // 2)))
         self.gui_manager.draw()
