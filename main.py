@@ -1,6 +1,13 @@
 import arcade
-from pycode.windows.main_menu_view import MainMenu
+from src.windows.base_window import BaseWindow
 
 
-game = MainMenu(500, 500, 'Папа ум')
-arcade.run()
+if __name__ == "__main__":
+    # Создаем главное окно
+    window = BaseWindow()
+
+    # Показываем стартовый экран
+    window.switch_view("start")
+
+    # Запускаем игровой цикл
+    arcade.run()
