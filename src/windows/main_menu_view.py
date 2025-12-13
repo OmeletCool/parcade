@@ -20,7 +20,7 @@ class MainMenuView(arcade.View):
         self.overlay_sprite_list = arcade.SpriteList()
         self.fade_duration = 6.0
         self.display_duration = 3.0
-        self.background_image_path = 'resources/backgrounds/main_menu_background.png'
+        self.background_image_path = 'resources/textures/backgrounds/main_menu_background.png'
 
     def setup(self):
         """Инициализация представления"""
