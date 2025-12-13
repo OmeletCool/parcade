@@ -19,10 +19,7 @@ class BaseWindow(arcade.Window):
     def get_view(self, view_name):
         """Получить или создать представление по имени"""
         if view_name not in self.views:
-            if view_name == "start":
-                from src.windows.start_view import StartView
-                self.views[view_name] = StartView(self)
-            elif view_name == "main_menu":
+            if view_name == "main_menu":
                 from src.windows.main_menu_view import MainMenuView
                 self.views[view_name] = MainMenuView(self)
 

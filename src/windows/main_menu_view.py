@@ -1,4 +1,5 @@
 import arcade
+import math
 from pyglet.graphics import Batch
 from src.settings import settings
 from src.registry import reg
@@ -10,75 +11,119 @@ class MainMenuView(arcade.View):
     def __init__(self, window):
         super().__init__()
         self.window = window  # Ссылка на главное окно
+        self.timer = 0.0
         self.batch = Batch()
         self.shape_list = arcade.shape_list.ShapeElementList()
-        self.name_game = None
-        self.rect_outline = None
+        self.sprite_list = arcade.SpriteList()
+        self.background_sprite = None
+        self.overlay = None
+        self.overlay_sprite_list = arcade.SpriteList()
+        self.fade_duration = 6.0
+        self.display_duration = 3.0
+        self.background_image_path = 'resources/backgrounds/main_menu_background.png'
+
+    def setup(self):
+        """Инициализация представления"""
+        self.load_background()
+        self.create_overlay()
 
     def on_show_view(self):
         """Вызывается при показе этого представления"""
-        self.create_text()
+        self.setup()
+        self.timer = 0.0
 
     def on_draw(self):
         """Рисование"""
         self.clear()
-        self.batch.draw()
-        self.shape_list.draw()
+
+        self.sprite_list.draw()
+
+        self.overlay_sprite_list.draw()
 
     def on_update(self, delta_time):
         """Обновление логики"""
-        pass
+        self.timer += delta_time
 
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ESCAPE:
-            self.window.switch_view("start")
+        if self.overlay and self.timer <= self.fade_duration:
+            progress = self.timer / self.fade_duration
+            eased_progress = 1 - math.pow(1 - progress, 3)
+            alpha = int(255 * (1.0 - eased_progress))
+            alpha = max(0, min(255, alpha))
+            self.overlay.color = (0, 0, 0, alpha)
+
+        # Переход на главное меню через 5 секунд
+        if self.timer >= self.fade_duration + self.display_duration:
+            self.window.switch_view("main_menu")
 
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
-        self.create_text()
+        self.update_background_position_and_size()
 
-    def create_text(self):
-        """Создание текста и рамки для главного меню"""
-        # Очищаем предыдущие объекты
-        self.batch = Batch()
-        if self.shape_list:
-            self.shape_list.clear()
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self.timer < self.fade_duration:
+            self.timer = self.fade_duration
+            self.overlay.color = (0, 0, 0, 0)
 
-        center_x = self.window.width // 2
-        center_y = self.window.height // 1.2
+    def load_background(self):
+        texture = arcade.load_texture(self.background_image_path)
 
-        # Расчет размера шрифта
-        base_width = settings.width_min
-        font_size = int(24 * (self.window.width / base_width))
-
-        # Создаем текст
-        self.name_game = arcade.Text(
-            "Главное меню",
-            center_x,
-            center_y,
-            arcade.color.RED,
-            font_size,
-            bold=True,
-            align="center",
-            anchor_x="center",
-            anchor_y="center",
-            batch=self.batch
+        self.background_sprite = arcade.Sprite(
+            path_or_texture=texture,
+            center_x=self.window.width // 2,
+            center_y=self.window.height // 2
         )
 
-        # Создаем рамку
-        text_width = self.name_game.content_width
-        text_height = self.name_game.content_height
-        padding = int(min(self.window.width, self.window.height) * 0.05)
-        rect_width = text_width + padding
-        rect_height = text_height + padding
+        self.sprite_list.append(self.background_sprite)
 
-        self.rect_outline = arcade.shape_list.create_rectangle_outline(
-            center_x=center_x,
-            center_y=center_y,
-            width=rect_width,
-            height=rect_height,
-            color=arcade.color.RED,
-            border_width=2
+        self.update_background_position_and_size()
+
+    def create_overlay(self):
+        self.overlay = arcade.SpriteSolidColor(
+            width=self.window.width,
+            height=self.window.height,
+            color=(0, 0, 0, 255)
         )
-        self.shape_list.append(self.rect_outline)
+        self.overlay.center_x = self.window.width // 2
+        self.overlay.center_y = self.window.height // 2
+        self.overlay_sprite_list.append(self.overlay)
+
+    def update_background_position_and_size(self):
+        # это было растягивание при сохранениях пропорций
+
+        # if not self.background_sprite or not self.background_sprite.texture:
+        #     return
+
+        # texture = self.background_sprite.texture
+        # orig_width = texture.width
+        # orig_height = texture.height
+
+        # window_ratio = self.window.width / self.window.height
+        # background_image_ratio = orig_width / orig_height
+
+        # if window_ratio > background_image_ratio:
+        #     scale = self.window.height / orig_height
+        # else:
+        #     scale = self.window.width / orig_width
+
+        # self.background_sprite.width = orig_width * scale
+        # self.background_sprite.height = orig_height * scale
+
+        # self.background_sprite.center_x = self.window.width // 2
+        # self.background_sprite.center_y = self.window.height // 2
+
+        # а это просто растягивание
+
+        if not self.background_sprite:
+            return
+
+        self.background_sprite.width = self.window.width
+        self.background_sprite.height = self.window.height
+        self.background_sprite.center_x = self.window.width // 2
+        self.background_sprite.center_y = self.window.height // 2
+
+        if self.overlay:
+            self.overlay.width = self.window.width
+            self.overlay.height = self.window.height
+            self.overlay.center_x = self.window.width // 2
+            self.overlay.center_y = self.window.height // 2
