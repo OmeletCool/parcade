@@ -11,5 +11,7 @@ class Settings:
 
         self.reboot = False  # Флажок для перезагрузки приложения
 
+        self.language = 0
+
 
 settings = Settings()

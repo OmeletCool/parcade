@@ -9,12 +9,17 @@ class BaseWindow(arcade.Window):
     def __init__(self):
         super().__init__(settings.width, settings.height, settings.title,
                          resizable=settings.resizable, fullscreen=settings.fullscreen)
-        self.set_minimum_size(settings.width_min, settings.height_min)
+        self.set_minimum_size(settings.width_min,
+                              settings.height_min)
         self.center_window()
         self.background_color = arcade.color.BLACK
-
+        self.language = settings.language
         # Храним представления
         self.views = {}
+        self.main_theme_audio = arcade.load_sound(
+            'resources/sounds/music/main_theme.ogg')
+        self.wind_sound = arcade.load_sound(
+            'resources/sounds/sfx/ambient/wind.wav')
 
     def get_view(self, view_name):
         """Получить или создать представление по имени"""

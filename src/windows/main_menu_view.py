@@ -3,6 +3,7 @@ import math
 from pyglet.graphics import Batch
 from src.settings import settings
 from src.registry import reg
+from resources.languages import LANGUAGES
 
 
 class MainMenuView(arcade.View):
@@ -11,6 +12,8 @@ class MainMenuView(arcade.View):
     def __init__(self, window):
         super().__init__()
         self.window = window  # Ссылка на главное окно
+
+        self.language = window.language
 
         self.timer = 0.0
 
@@ -38,23 +41,41 @@ class MainMenuView(arcade.View):
         self.shadow_sprites = arcade.SpriteList()
         self.button_sprites = arcade.SpriteList()
 
-        self.wind_sound = arcade.load_sound(
-            'resources/sounds/sfx/ambient/wind.wav')
+        self.wind_sound = window.wind_sound
+        self.main_theme = window.main_theme_audio
 
-        self.fade_duration = self.wind_sound.get_length()
+        self.fade_background_duration = self.wind_sound.get_length()
         self.isFading = False
         self.isTextToContinue = False
+        self.text_to_continue_timer = 0.0
+        self.text_to_continue = None
+        self.fade_text_to_continue_duration = 1.5
+        self.text_to_continue_alpha = 0
 
         self.click_count = 0
+
+        arcade.load_font('resources/fonts/montserrat.ttf')
 
     def setup(self):
         """Инициализация представления"""
         self.load_background()
         self.create_overlay()
         self.isFading = True
+        self.isTextToContinue = False
+        self.text_to_continue_timer = 0.0
         self.wind_sound_player = self.wind_sound.play()
         self.create_button_configs()
         self.create_buttons()
+        self.text_to_continue = arcade.Text(
+            text=LANGUAGES['press_for_cont'][self.language],
+            x=self.window.width // 2,
+            y=self.window.height * 0.15,
+            color=(255, 255, 255, self.text_to_continue_alpha),
+            font_size=28,
+            font_name='montserrat',
+            batch=self.batch,
+            anchor_x='center'
+        )
 
     def create_button_configs(self):
         total_height = (self.button_height * 2) + self.spacing_between_buttons
@@ -101,25 +122,35 @@ class MainMenuView(arcade.View):
             self.button_sprites.draw()
 
         if self.isTextToContinue:
-            self.show_text_to_continue()
+            self.text_to_continue.color = (
+                255, 255, 255, self.text_to_continue_alpha)
+            self.batch.draw()
 
     def on_update(self, delta_time):
         """Обновление логики"""
         self.timer += delta_time
 
-        if self.overlay and self.timer <= self.fade_duration:
-            progress = self.timer / self.fade_duration
-            eased_progress = 1 - math.pow(1 - progress, 3)
+        if self.overlay and self.timer <= self.fade_background_duration:
+            progress1 = self.timer / self.fade_background_duration
+            eased_progress = 1 - math.pow(1 - progress1, 3)
             alpha = int(255 * (1.0 - eased_progress))
             alpha = max(0, min(255, alpha))
             self.overlay.color = (0, 0, 0, alpha)
 
-        if self.timer >= self.fade_duration:
+        if self.text_to_continue_timer <= self.fade_text_to_continue_duration and self.isTextToContinue:
+            progress2 = self.text_to_continue_timer / self.fade_text_to_continue_duration
+            self.text_to_continue_alpha = int(255 * progress2)
+        elif self.text_to_continue_timer >= self.fade_text_to_continue_duration and self.isTextToContinue:
+            self.text_to_continue_alpha = 255
+
+        if self.timer >= self.fade_background_duration:
             self.isFading = False
 
-        if self.click_count == 0 and self.timer >= self.fade_duration + 2.0:
+        if self.click_count == 0 and self.timer >= self.fade_background_duration + 2.0:
             self.isTextToContinue = True
+            self.text_to_continue_timer += delta_time
         elif self.click_count > 0:
+            self.text_to_continue_alpha = 255
             self.isTextToContinue = False
 
     def on_resize(self, width: float, height: float):
@@ -141,8 +172,10 @@ class MainMenuView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_count += 1
+        if self.click_count == 1:
+            arcade.play_sound(self.main_theme, loop=True)
         if self.isFading:
-            self.timer = self.fade_duration
+            self.timer = self.fade_background_duration
             self.wind_sound.stop(self.wind_sound_player)
             self.overlay.color = (0, 0, 0, 0)
             self.isFading = False
@@ -170,8 +203,11 @@ class MainMenuView(arcade.View):
             print('settings')
 
     def on_key_press(self, symbol, modifiers):
+        self.click_count += 1
+        if self.click_count == 1:
+            arcade.play_sound(self.main_theme, loop=True)
         if self.isFading:
-            self.timer = self.fade_duration
+            self.timer = self.fade_background_duration
             self.wind_sound.stop(self.wind_sound_player)
             self.overlay.color = (0, 0, 0, 0)
             self.isFading = False
@@ -239,9 +275,6 @@ class MainMenuView(arcade.View):
 
         self.button_sprites.append(btn_settings)
         self.btn_configs.append(self.btn_settings)
-
-    def show_text_to_continue(self):
-        pass
 
     def update_button_textures(self):
         for i in range(len(self.button_sprites)):
