@@ -8,6 +8,7 @@ if __name__ == "__main__":
 
     # Показываем стартовый экран
     window.switch_view("main_menu")
+    
 
     # Запускаем игровой цикл
     arcade.run()
