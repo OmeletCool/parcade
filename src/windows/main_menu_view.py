@@ -18,14 +18,19 @@ class MainMenuView(arcade.View):
         self.background_sprite = None
         self.overlay = None
         self.overlay_sprite_list = arcade.SpriteList()
-        self.fade_duration = 6.0
+        self.wind_sound = arcade.load_sound(
+            'resources/sounds/sfx/ambient/wind.wav')
+        self.fade_duration = self.wind_sound.get_length()
         self.display_duration = 3.0
         self.background_image_path = 'resources/textures/backgrounds/main_menu_background.png'
+        self.isFading = False
 
     def setup(self):
         """Инициализация представления"""
         self.load_background()
         self.create_overlay()
+        self.isFading = True
+        self.wind_sound_player = self.wind_sound.play()
 
     def on_show_view(self):
         """Вызывается при показе этого представления"""
@@ -51,9 +56,8 @@ class MainMenuView(arcade.View):
             alpha = max(0, min(255, alpha))
             self.overlay.color = (0, 0, 0, alpha)
 
-        # Переход на главное меню через 5 секунд
-        if self.timer >= self.fade_duration + self.display_duration:
-            self.window.switch_view("main_menu")
+        if self.timer >= self.fade_duration:
+            self.isFading = False
 
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
@@ -63,6 +67,13 @@ class MainMenuView(arcade.View):
     def on_mouse_press(self, x, y, button, modifiers):
         if self.timer < self.fade_duration:
             self.timer = self.fade_duration
+            self.wind_sound.stop(self.wind_sound_player)
+            self.overlay.color = (0, 0, 0, 0)
+
+    def on_key_press(self, symbol, modifiers):
+        if self.timer < self.fade_duration:
+            self.timer = self.fade_duration
+            self.wind_sound.stop(self.wind_sound_player)
             self.overlay.color = (0, 0, 0, 0)
 
     def load_background(self):
