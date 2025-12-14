@@ -16,6 +16,7 @@ class SettingsMenuView(arcade.View):
             'title': LANGUAGES['settings_button'][self.language],
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
+            'music': LANGUAGES['music'][self.language]
         }
 
         # Элементы UI
@@ -75,6 +76,18 @@ class SettingsMenuView(arcade.View):
             batch=self.batch
         )
         self.text_objects.append(self.change_language_text)
+        
+        self.music_text = arcade.Text(
+            text=self.texts['music'], 
+            x=self.window.width // 3.15, 
+            y=self.window.height * 0.51,
+            color=arcade.color.BLACK, 
+            font_size=18, 
+            font_name='montserrat', 
+            anchor_x='center',
+            batch=self.batch
+        )
+        self.text_objects.append(self.music_text)
 
     def on_show_view(self):
         self.setup()
@@ -149,6 +162,10 @@ class SettingsMenuView(arcade.View):
         if self.change_language_text:
             self.change_language_text.x = self.window.width // 4.1
             self.change_language_text.y = self.window.height * 0.71
+
+        if self.music_text:
+            self.change_language_text.x = self.window.width // 3.15
+            self.change_language_text.y = self.window.height * 0.51
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
