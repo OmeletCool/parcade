@@ -237,6 +237,7 @@ class MainMenuView(arcade.View):
     def on_button_click(self, button):
         if button['type'] == 'play':
             print('play')
+            self.window.switch_view('levels_window')
         elif button['type'] == 'settings':
             print('settings')
             self.window.switch_view('settings_window')

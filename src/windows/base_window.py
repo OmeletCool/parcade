@@ -24,6 +24,9 @@ class BaseWindow(arcade.Window):
             elif view_name == 'settings_window':
                 from src.windows.settings_window import SettingsMenuView
                 self.views[view_name] = SettingsMenuView(self)
+            elif view_name == 'levels_window':
+                from src.windows.levels_window import LevelsView
+                self.views[view_name] = LevelsView(self)
 
         return self.views[view_name]
 
