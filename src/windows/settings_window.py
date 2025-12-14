@@ -11,9 +11,10 @@ class SettingsMenuView(arcade.View):
 
         # Загрузка текстов
         self.texts = {
-            'title': LANGUAGES.get('settings_title', {}).get(self.language, 'Settings'),
-            'back': LANGUAGES.get('back', {}).get(self.language, 'Back'),
-            'press_to_return': LANGUAGES.get('press_to_return', {}).get(self.language, 'Press ESC to return')
+            'title': LANGUAGES['change_language'][self.language],
+            'press_to_return': LANGUAGES['Esc_to_return'][self.language],
+            'change_language': LANGUAGES['change_language'][self.language],
+            'language': LANGUAGES['language'][self.language]
         }
 
         # Элементы UI
@@ -32,34 +33,21 @@ class SettingsMenuView(arcade.View):
         """Инициализация представления"""
         self.load_background()
 
-        # Создание заголовка
-        self.title_text = arcade.Text(
-            text=self.texts['title'],
-            x=self.window.width // 2,
-            y=self.window.height * 0.8,
-            color=arcade.color.WHITE,
-            font_size=48,
-            font_name='montserrat',
-            anchor_x='center'
-        )
 
-        # Текст для возврата
-        self.return_text = arcade.Text(
-            text=self.texts['press_to_return'],
-            x=self.window.width // 2,
-            y=self.window.height * 0.1,
-            color=arcade.color.WHITE,
-            font_size=24,
-            font_name='montserrat',
-            anchor_x='center'
-        )
+        self.title_text = arcade.Text(text=self.texts['title'], x=self.window.width // 1.4, y=self.window.height * 0.8,
+            color=arcade.color.BLACK, font_size=32, font_name='montserrat', anchor_x='center')
+        self.return_text = arcade.Text(text=self.texts['press_to_return'], x=self.window.width // 2, y=self.window.height * 0.02,
+            color=arcade.color.BLACK, font_size=18, font_name='montserrat', anchor_x='center')
+        self.return_text = arcade.Text(text=self.texts['change_language'], x=self.window.width // 1.5, y=self.window.height * 1.1,
+            color=arcade.color.BLACK, font_size=18, font_name='montserrat', anchor_x='center')
+        self.return_text = arcade.Text(text=self.texts['language'], x=self.window.width // 1.7, y=self.window.height * 1.2,
+            color=arcade.color.BLACK, font_size=15, font_name='montserrat', anchor_x='center')
+
 
     def on_show_view(self):
-        """Вызывается при показе этого представления"""
         self.setup()
 
     def on_draw(self):
-        """Отрисовка"""
         self.clear()
 
         # Фон
@@ -112,16 +100,10 @@ class SettingsMenuView(arcade.View):
         self.background_sprite.center_y = self.window.height // 2
 
     def update_text_position(self):
-        """Обновление позиции текста"""
         if self.title_text:
-            self.title_text.x = self.window.width // 2
+            self.title_text.x = self.window.width // 1.4
             self.title_text.y = self.window.height * 0.8
 
         if self.return_text:
             self.return_text.x = self.window.width // 2
-            self.return_text.y = self.window.height * 0.1
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        """Обработка клика мыши - возврат в главное меню по любому клику"""
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.window.switch_view("main_menu")
+            self.return_text.y = self.window.height * 0.02
