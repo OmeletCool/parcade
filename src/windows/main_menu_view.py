@@ -47,7 +47,7 @@ class MainMenuView(arcade.View):
             'resources/sounds/sfx/ambient/wind.wav')
 
         self.fade_background_duration = self.wind_sound.get_length()
-        self.isFading = False
+        self.isFading = True
         self.isTextToContinue = False
         self.text_to_continue_timer = 0.0
         self.text_to_continue = None
@@ -58,16 +58,9 @@ class MainMenuView(arcade.View):
 
         arcade.load_font('resources/fonts/montserrat.ttf')
 
-    def setup(self):
-        """Инициализация представления"""
-        self.load_background()
         self.create_overlay()
-        self.isFading = True
-        self.isTextToContinue = False
-        self.text_to_continue_timer = 0.0
         self.wind_sound_player = self.wind_sound.play()
-        self.create_button_configs()
-        self.create_buttons()
+
         self.text_to_continue = arcade.Text(
             text=LANGUAGES['press_for_cont'][self.language],
             x=self.window.width // 2,
@@ -78,6 +71,16 @@ class MainMenuView(arcade.View):
             batch=self.batch,
             anchor_x='center'
         )
+
+        self.load_background()
+        self.create_button_configs()
+        self.create_buttons()
+
+    def setup(self):
+        """Инициализация представления"""
+        # self.load_background()
+        # self.create_button_configs()
+        # self.create_buttons()
 
     def create_button_configs(self):
         total_height = (self.button_height * 2) + self.spacing_between_buttons
@@ -116,8 +119,8 @@ class MainMenuView(arcade.View):
         self.clear()
 
         self.background_sprite_list.draw()
-
-        self.overlay_sprite_list.draw()
+        if self.isFading:
+            self.overlay_sprite_list.draw()
 
         if not self.isFading and self.click_count >= 1:
             self.shadow_sprites.draw()
@@ -171,7 +174,6 @@ class MainMenuView(arcade.View):
                     self.btn_configs[i]['state'] = 'normal'
 
         self.update_button_textures()
-        
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_count += 1
@@ -205,6 +207,7 @@ class MainMenuView(arcade.View):
         elif button['type'] == 'settings':
             print('settings')
             self.window.switch_view('settings_window')
+
     def on_key_press(self, symbol, modifiers):
         self.click_count += 1
         if self.click_count == 1:
@@ -237,8 +240,6 @@ class MainMenuView(arcade.View):
         self.overlay.center_x = self.window.width // 2
         self.overlay.center_y = self.window.height // 2
         self.overlay_sprite_list.append(self.overlay)
-        
-
 
     def create_buttons(self):
         shadow_btn_play = arcade.SpriteSolidColor(

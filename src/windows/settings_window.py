@@ -19,19 +19,19 @@ class SettingsMenuView(arcade.View):
         # Элементы UI
         self.background_sprite_list = arcade.SpriteList()
         self.background_sprite = None
-        
+
         self.title_text = None
         self.return_text = None
-        
+
         # Фон
         self.background_image_path = 'resources/textures/backgrounds/settings_background.png'
-        
+
         arcade.load_font('resources/fonts/montserrat.ttf')
 
     def setup(self):
         """Инициализация представления"""
         self.load_background()
-        
+
         # Создание заголовка
         self.title_text = arcade.Text(
             text=self.texts['title'],
@@ -42,7 +42,7 @@ class SettingsMenuView(arcade.View):
             font_name='montserrat',
             anchor_x='center'
         )
-        
+
         # Текст для возврата
         self.return_text = arcade.Text(
             text=self.texts['press_to_return'],
@@ -69,7 +69,7 @@ class SettingsMenuView(arcade.View):
         # Заголовок
         if self.title_text:
             self.title_text.draw()
-            
+
         # Текст для возврата
         if self.return_text:
             self.return_text.draw()
@@ -78,7 +78,7 @@ class SettingsMenuView(arcade.View):
         """Обработка нажатия клавиш"""
         # ESC для возврата в главное меню
         if symbol == arcade.key.ESCAPE:
-            self.window.switch_view("main_window")
+            self.window.switch_view("main_menu")
 
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
@@ -94,11 +94,11 @@ class SettingsMenuView(arcade.View):
             center_x=self.window.width // 2,
             center_y=self.window.height // 2
         )
-        
+
         # Растягиваем фон на весь экран
         self.background_sprite.width = self.window.width
         self.background_sprite.height = self.window.height
-        
+
         self.background_sprite_list.append(self.background_sprite)
 
     def update_background_position_and_size(self):
@@ -116,7 +116,7 @@ class SettingsMenuView(arcade.View):
         if self.title_text:
             self.title_text.x = self.window.width // 2
             self.title_text.y = self.window.height * 0.8
-            
+
         if self.return_text:
             self.return_text.x = self.window.width // 2
             self.return_text.y = self.window.height * 0.1
