@@ -185,14 +185,14 @@ class MainMenuView(arcade.View):
             self.isTextToContinue = False
             self.btn_configs[0]['text_color'] = (29, 5, 59, 255)
             self.btn_configs[1]['text_color'] = (29, 5, 59, 255)
-            self.play_button_text.color = (29, 5, 59, 255)
-            self.settings_button_text.color = (29, 5, 59, 255)
+            self.update_button_text()
 
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
         self.update_background_position_and_size()
         self.update_buttons_position_and_size()
+        self.update_button_text()
 
     def on_mouse_motion(self, x, y, dx, dy):
         for i in range(len(self.button_sprites)):
@@ -390,3 +390,12 @@ class MainMenuView(arcade.View):
 
         self.shadow_sprites[1].center_x = self.btn_settings['center_x']
         self.shadow_sprites[1].center_y = self.btn_settings['center_y'] - 2
+
+    def update_button_text(self):
+        self.play_button_text.x = self.btn_play['center_x']
+        self.play_button_text.y = self.btn_play['center_y']
+        self.play_button_text.color = self.btn_play['text_color']
+
+        self.settings_button_text.x = self.btn_play['center_x']
+        self.settings_button_text.y = self.btn_settings['center_y']
+        self.settings_button_text.color = self.btn_play['text_color']
