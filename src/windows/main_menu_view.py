@@ -169,6 +169,7 @@ class MainMenuView(arcade.View):
                     self.btn_configs[i]['state'] = 'normal'
 
         self.update_button_textures()
+        
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_count += 1
@@ -201,7 +202,7 @@ class MainMenuView(arcade.View):
             print('play')
         elif button['type'] == 'settings':
             print('settings')
-
+            self.window.switch_view('settings_window')
     def on_key_press(self, symbol, modifiers):
         self.click_count += 1
         if self.click_count == 1:
@@ -234,6 +235,8 @@ class MainMenuView(arcade.View):
         self.overlay.center_x = self.window.width // 2
         self.overlay.center_y = self.window.height // 2
         self.overlay_sprite_list.append(self.overlay)
+        
+
 
     def create_buttons(self):
         shadow_btn_play = arcade.SpriteSolidColor(
