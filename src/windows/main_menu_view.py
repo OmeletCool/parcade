@@ -49,6 +49,8 @@ class MainMenuView(arcade.View):
         self.fade_background_duration = self.wind_sound.get_length()
         self.isFading = True
         self.isTextToContinue = False
+
+        self.isStarted = False
         self.text_to_continue_timer = 0.0
         self.text_to_continue = None
         self.fade_text_to_continue_duration = 1.5
@@ -109,7 +111,7 @@ class MainMenuView(arcade.View):
         start_y = self.window.height // 2 + \
             (total_height // 2) - (self.button_height // 2)
 
-        self.btn_play = {
+        btn_play = {
             'center_x': self.window.width // 2,
             'center_y': start_y,
             'state': 'normal',
@@ -119,7 +121,7 @@ class MainMenuView(arcade.View):
             'text': LANGUAGES['play_button'][self.language],
             'text_color': (29, 5, 59, 0)
         }
-        self.btn_settings = {
+        btn_settings = {
             'center_x': self.window.width // 2,
             'center_y': start_y - self.button_height - self.spacing_between_buttons,
             'state': 'normal',
@@ -130,8 +132,8 @@ class MainMenuView(arcade.View):
             'text_color': (29, 5, 59, 0)
         }
         self.btn_configs = [
-            self.btn_play,
-            self.btn_settings
+            btn_play,
+            btn_settings
         ]
 
     def on_show_view(self):
@@ -180,8 +182,9 @@ class MainMenuView(arcade.View):
         if self.click_count == 0 and self.timer >= self.fade_background_duration + 2.0:
             self.isTextToContinue = True
             self.text_to_continue_timer += delta_time
-        elif self.click_count > 0:
-            self.text_to_continue_alpha = 255
+        elif self.click_count > 0 and not self.isStarted:
+            self.isStarted = True
+            self.text_to_continue.color = (255, 255, 255, 0)
             self.isTextToContinue = False
             self.btn_configs[0]['text_color'] = (29, 5, 59, 255)
             self.btn_configs[1]['text_color'] = (29, 5, 59, 255)
@@ -273,57 +276,59 @@ class MainMenuView(arcade.View):
 
     def create_buttons(self):
         shadow_btn_play = arcade.SpriteSolidColor(
-            self.btn_play['width'],
-            self.btn_play['height'],
-            self.btn_play['center_x'],
-            self.btn_play['center_y'] - 2,
+            self.btn_configs[0]['width'],
+            self.btn_configs[0]['height'],
+            self.btn_configs[0]['center_x'],
+            self.btn_configs[0]['center_y'] - 2,
             (0, 0, 0, 90)
         )
         self.shadow_sprites.append(shadow_btn_play)
 
         btn_play = arcade.Sprite(
-            path_or_texture=self.button_textures[self.btn_play['state']],
-            center_x=self.btn_play['center_x'],
-            center_y=self.btn_play['center_y']
+            path_or_texture=self.button_textures[self.btn_configs[0]['state']],
+            center_x=self.btn_configs[0]['center_x'],
+            center_y=self.btn_configs[0]['center_y']
         )
-        btn_play.width = self.btn_play['width']
-        btn_play.height = self.btn_play['height']
+        btn_play.width = self.btn_configs[0]['width']
+        btn_play.height = self.btn_configs[0]['height']
 
         self.button_sprites.append(btn_play)
-        self.btn_configs.append(self.btn_play)
 
         shadow_btn_settings = arcade.SpriteSolidColor(
-            self.btn_settings['width'],
-            self.btn_settings['height'],
-            self.btn_settings['center_x'],
-            self.btn_settings['center_y'] - 2,
+            self.btn_configs[1]['width'],
+            self.btn_configs[1]['height'],
+            self.btn_configs[1]['center_x'],
+            self.btn_configs[1]['center_y'] - 2,
             (0, 0, 0, 90)
         )
         self.shadow_sprites.append(shadow_btn_settings)
 
         btn_settings = arcade.Sprite(
-            path_or_texture=self.button_textures[self.btn_settings['state']],
-            center_x=self.btn_settings['center_x'],
-            center_y=self.btn_settings['center_y']
+            path_or_texture=self.button_textures[self.btn_configs[1]['state']],
+            center_x=self.btn_configs[1]['center_x'],
+            center_y=self.btn_configs[1]['center_y']
         )
-        btn_settings.width = self.btn_settings['width']
-        btn_settings.height = self.btn_settings['height']
+        btn_settings.width = self.btn_configs[1]['width']
+        btn_settings.height = self.btn_configs[1]['height']
 
         self.button_sprites.append(btn_settings)
-        self.btn_configs.append(self.btn_settings)
 
     def update_button_textures(self):
         for i in range(len(self.button_sprites)):
             state = self.btn_configs[i]['state']
             if state == 'normal':
                 self.button_sprites[i].texture = self.button_textures['normal']
-                self.btn_configs[i]['text_color'] = (29, 5, 59, 255)
+                if self.isStarted:
+                    self.btn_configs[i]['text_color'] = (29, 5, 59, 255)
             elif state == 'hovered':
                 self.button_sprites[i].texture = self.button_textures['hovered']
-                self.btn_configs[i]['text_color'] = (45, 16, 82, 255)
+                if self.isStarted:
+                    self.btn_configs[i]['text_color'] = (45, 16, 82, 255)
             elif state == 'pressed':
                 self.button_sprites[i].texture = self.button_textures['pressed']
-                self.btn_configs[i]['text_color'] = (62, 10, 130, 255)
+                if self.isStarted:
+                    self.btn_configs[i]['text_color'] = (62, 10, 130, 255)
+        self.update_button_text()
 
     def update_background_position_and_size(self):
         # это было растягивание при сохранениях пропорций
@@ -372,30 +377,30 @@ class MainMenuView(arcade.View):
         total_height = (self.button_height * 2) + self.spacing_between_buttons
         start_y = center_y + (total_height // 2) - (self.button_height // 2)
 
-        self.btn_play['center_x'] = center_x
-        self.btn_play['center_y'] = start_y
+        self.btn_configs[0]['center_x'] = center_x
+        self.btn_configs[0]['center_y'] = start_y
 
-        self.button_sprites[0].center_x = self.btn_play['center_x']
-        self.button_sprites[0].center_y = self.btn_play['center_y']
+        self.button_sprites[0].center_x = self.btn_configs[0]['center_x']
+        self.button_sprites[0].center_y = self.btn_configs[0]['center_y']
 
-        self.shadow_sprites[0].center_x = self.btn_play['center_x']
-        self.shadow_sprites[0].center_y = self.btn_play['center_y'] - 2
+        self.shadow_sprites[0].center_x = self.btn_configs[0]['center_x']
+        self.shadow_sprites[0].center_y = self.btn_configs[0]['center_y'] - 2
 
-        self.btn_settings['center_x'] = center_x
-        self.btn_settings['center_y'] = start_y - \
+        self.btn_configs[1]['center_x'] = center_x
+        self.btn_configs[1]['center_y'] = start_y - \
             self.button_height - self.spacing_between_buttons
 
-        self.button_sprites[1].center_x = self.btn_settings['center_x']
-        self.button_sprites[1].center_y = self.btn_settings['center_y']
+        self.button_sprites[1].center_x = self.btn_configs[1]['center_x']
+        self.button_sprites[1].center_y = self.btn_configs[1]['center_y']
 
-        self.shadow_sprites[1].center_x = self.btn_settings['center_x']
-        self.shadow_sprites[1].center_y = self.btn_settings['center_y'] - 2
+        self.shadow_sprites[1].center_x = self.btn_configs[1]['center_x']
+        self.shadow_sprites[1].center_y = self.btn_configs[1]['center_y'] - 2
 
     def update_button_text(self):
-        self.play_button_text.x = self.btn_play['center_x']
-        self.play_button_text.y = self.btn_play['center_y']
-        self.play_button_text.color = self.btn_play['text_color']
+        self.play_button_text.x = self.btn_configs[0]['center_x']
+        self.play_button_text.y = self.btn_configs[0]['center_y']
+        self.play_button_text.color = self.btn_configs[0]['text_color']
 
-        self.settings_button_text.x = self.btn_play['center_x']
-        self.settings_button_text.y = self.btn_settings['center_y']
-        self.settings_button_text.color = self.btn_play['text_color']
+        self.settings_button_text.x = self.btn_configs[1]['center_x']
+        self.settings_button_text.y = self.btn_configs[1]['center_y']
+        self.settings_button_text.color = self.btn_configs[1]['text_color']
