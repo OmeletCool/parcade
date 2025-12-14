@@ -32,8 +32,8 @@ class MainMenuView(arcade.View):
             'pressed': arcade.load_texture('resources/textures/ui/buttons/pressed/main_menu_button.png')
         }
 
-        self.button_width = self.button_textures['normal'].width * 2
-        self.button_height = self.button_textures['normal'].height * 2
+        self.button_width = self.button_textures['normal'].width * 2.7
+        self.button_height = self.button_textures['normal'].height * 2.7
         self.spacing_between_buttons = 20
 
         self.btn_configs = []
@@ -41,8 +41,10 @@ class MainMenuView(arcade.View):
         self.shadow_sprites = arcade.SpriteList()
         self.button_sprites = arcade.SpriteList()
 
-        self.wind_sound = window.wind_sound
-        self.main_theme = window.main_theme_audio
+        self.main_theme_audio = arcade.load_sound(
+            'resources/sounds/music/main_theme.ogg')
+        self.wind_sound = arcade.load_sound(
+            'resources/sounds/sfx/ambient/wind.wav')
 
         self.fade_background_duration = self.wind_sound.get_length()
         self.isFading = False
@@ -173,7 +175,7 @@ class MainMenuView(arcade.View):
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_count += 1
         if self.click_count == 1:
-            arcade.play_sound(self.main_theme, loop=True)
+            arcade.play_sound(self.main_theme_audio, loop=True, volume=1.7)
         if self.isFading:
             self.timer = self.fade_background_duration
             self.wind_sound.stop(self.wind_sound_player)
@@ -205,7 +207,7 @@ class MainMenuView(arcade.View):
     def on_key_press(self, symbol, modifiers):
         self.click_count += 1
         if self.click_count == 1:
-            arcade.play_sound(self.main_theme, loop=True)
+            arcade.play_sound(self.main_theme_audio, loop=True)
         if self.isFading:
             self.timer = self.fade_background_duration
             self.wind_sound.stop(self.wind_sound_player)
