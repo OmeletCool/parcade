@@ -94,7 +94,9 @@ class MainMenuView(arcade.View):
             'state': 'normal',
             'width': self.button_width,
             'height': self.button_height,
-            'type': 'play'
+            'type': 'play',
+            'text': LANGUAGES['play_button'][self.language],
+            'text_color': (29, 5, 59)
         }
         self.btn_settings = {
             'center_x': self.window.width // 2,
@@ -102,7 +104,9 @@ class MainMenuView(arcade.View):
             'state': 'normal',
             'width': self.button_width,
             'height': self.button_height,
-            'type': 'settings'
+            'type': 'settings',
+            'text': LANGUAGES['settings_button'][self.language],
+            'text_color': (29, 5, 59)
         }
         self.btn_configs = [
             self.btn_play,
@@ -125,6 +129,22 @@ class MainMenuView(arcade.View):
         if not self.isFading and self.click_count >= 1:
             self.shadow_sprites.draw()
             self.button_sprites.draw()
+            arcade.draw_text(
+                self.btn_configs[0]['text'],
+                self.btn_configs[0]['center_x'],
+                self.btn_configs[0]['center_y'],
+                self.btn_configs[0]['text_color'],
+                28,
+                anchor_x='center'
+            )
+            arcade.draw_text(
+                self.btn_configs[1]['text'],
+                self.btn_configs[1]['center_x'],
+                self.btn_configs[1]['center_y'],
+                self.btn_configs[1]['text_color'],
+                28,
+                anchor_x='center'
+            )
 
         if self.isTextToContinue:
             self.text_to_continue.color = (
@@ -287,10 +307,13 @@ class MainMenuView(arcade.View):
             state = self.btn_configs[i]['state']
             if state == 'normal':
                 self.button_sprites[i].texture = self.button_textures['normal']
+                self.btn_configs[i]['text_color'] = (29, 5, 59)
             elif state == 'hovered':
                 self.button_sprites[i].texture = self.button_textures['hovered']
+                self.btn_configs[i]['text_color'] = (45, 16, 82)
             elif state == 'pressed':
                 self.button_sprites[i].texture = self.button_textures['pressed']
+                self.btn_configs[i]['text_color'] = (62, 10, 130)
 
     def update_background_position_and_size(self):
         # это было растягивание при сохранениях пропорций
