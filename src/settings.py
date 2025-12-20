@@ -11,7 +11,15 @@ class Settings:
 
         self.reboot = False  # Флажок для перезагрузки приложения
 
-        self.language = 0
+        self.lang_dict = {
+            'english': 0,
+            'russian': 1,
+            'albanian': 2
+        }
+
+        with open('data/language.txt', 'r') as lang:
+            text = lang.read()
+            self.language = self.lang_dict[text] if text else 1
 
 
 settings = Settings()

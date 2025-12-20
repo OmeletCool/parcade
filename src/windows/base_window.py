@@ -12,6 +12,11 @@ class BaseWindow(arcade.Window):
         self.center_window()
         self.background_color = arcade.color.BLACK
         self.language = settings.language
+
+        self.background_music = None
+        self.music_player = None
+        self.is_music_playing = False
+
         # Храним представления
         self.views = {}
 
@@ -27,6 +32,9 @@ class BaseWindow(arcade.Window):
             elif view_name == 'levels_window':
                 from src.windows.levels_window import LevelsView
                 self.views[view_name] = LevelsView(self)
+            elif view_name == 'start_window':
+                from src.windows.start_window import StartView
+                self.views[view_name] = StartView(self)
 
         return self.views[view_name]
 
@@ -38,3 +46,17 @@ class BaseWindow(arcade.Window):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.Q:
             self.close()
+
+    def play_background_music(self):
+        if not self.is_music_playing:
+            self.background_music = arcade.load_sound(
+                'resources/sounds/music/main_theme.ogg')
+            self.music_player = arcade.play_sound(
+                self.background_music, loop=True)
+            self.is_music_playing = True
+
+    def stop_background_music(self):
+        if self.music_player:
+            arcade.stop_sound(self.music_player)
+            self.is_music_playing = False
+            self.music_player = None

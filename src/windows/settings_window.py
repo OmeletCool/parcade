@@ -10,7 +10,7 @@ class SettingsMenuView(arcade.View):
     def __init__(self, window):
         super().__init__()
         self.window = window
-        self.language = window.language
+        self.language = self.window.language
 
         self.batch = Batch()
 
@@ -42,6 +42,8 @@ class SettingsMenuView(arcade.View):
         arcade.load_font('resources/fonts/montserrat.ttf')
 
     def create_lang_dropdown(self):
+        self.ui_manager.clear()
+
         center_x = self.window.width // 2
         center_y = self.window.height // 2
 
@@ -60,7 +62,7 @@ class SettingsMenuView(arcade.View):
         self.lang_dropdown = UIDropdown(
             x=pos_x,
             y=pos_y,
-            default=LANGUAGES['change_language'][self.language],
+            default=LANGUAGES['language'][self.language],
             options=options,
             width=200,
             height=45,
@@ -71,17 +73,19 @@ class SettingsMenuView(arcade.View):
         @self.lang_dropdown.event('on_change')
         def on_language_change(event: UIOnChangeEvent):
             if event.new_value == LANGUAGES['language'][0]:
-                settings.language = 0
-                self.window.language = 0
                 self.language = 0
             elif event.new_value == LANGUAGES['language'][1]:
-                settings.language = 1
-                self.window.language = 1
                 self.language = 1
             elif event.new_value == LANGUAGES['language'][2]:
-                settings.language = 2
-                self.window.language = 2
                 self.language = 2
+
+            self.window.language = self.language
+
+            with open('data/language.txt', 'w') as lang:
+                lang.write(next((key for key, value in settings.lang_dict.items(
+                ) if value == self.language), 'russian'))
+
+            self.update_text_position_and_size_and_lang()
 
     def setup(self):
         self.load_background()
@@ -163,8 +167,8 @@ class SettingsMenuView(arcade.View):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
         self.update_background_position_and_size()
-        self.update_text_position()
-        self.ui_manager.on_resize(width, height)
+        self.update_text_position_and_size_and_lang()
+        self.create_lang_dropdown()
 
     def load_background(self):
         """Загрузка фона"""
@@ -202,19 +206,26 @@ class SettingsMenuView(arcade.View):
         self.background_sprite.center_x = self.window.width // 2
         self.background_sprite.center_y = self.window.height // 2
 
-    def update_text_position(self):
-        if self.title_text:
-            self.title_text.x = self.window.width // 1.4
-            self.title_text.y = self.window.height * 0.8
+    def update_text_position_and_size_and_lang(self):
+        self.texts = {
+            'title': LANGUAGES['settings_button'][self.language],
+            'press_to_return': LANGUAGES['Esc_to_return'][self.language],
+            'change_language': LANGUAGES['change_language'][self.language],
+            'music': LANGUAGES['music'][self.language]
+        }
 
-        if self.return_text:
-            self.return_text.x = self.window.width // 2
-            self.return_text.y = self.window.height * 0.02
+        self.title_text.text = self.texts['title']
+        self.title_text.x = self.window.width // 1.4
+        self.title_text.y = self.window.height * 0.8
 
-        if self.change_language_text:
-            self.change_language_text.x = self.window.width // 4.1
-            self.change_language_text.y = self.window.height * 0.71
+        self.return_text.text = self.texts['press_to_return']
+        self.return_text.x = self.window.width // 2
+        self.return_text.y = self.window.height * 0.02
 
-        if self.music_text:
-            self.change_language_text.x = self.window.width // 3.15
-            self.change_language_text.y = self.window.height * 0.51
+        self.change_language_text.text = self.texts['change_language']
+        self.change_language_text.x = self.window.width // 4.1
+        self.change_language_text.y = self.window.height * 0.71
+
+        self.music_text.text = self.texts['music']
+        self.music_text.x = self.window.width // 3.15
+        self.music_text.y = self.window.height * 0.51
