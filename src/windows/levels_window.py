@@ -1,16 +1,17 @@
 import arcade
+from src.registry import reg
 
 
 class LevelsView(arcade.View):
 
-    def __init__(self, window):
+    def __init__(self, window: arcade.Window):
         super().__init__()
         self.window = window
-        
+
+        self.reg = reg
+
         self.background_sprite_list = arcade.SpriteList()
         self.background_sprite = None
-        
-        self.background_image_path = 'resources/textures/backgrounds/main_menu_background.png'
 
     def setup(self):
         self.load_background()
@@ -33,7 +34,7 @@ class LevelsView(arcade.View):
         self.update_background_position_and_size()
 
     def load_background(self):
-        texture = arcade.load_texture(self.background_image_path)
+        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,

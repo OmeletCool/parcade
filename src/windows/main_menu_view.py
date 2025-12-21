@@ -10,16 +10,18 @@ from resources.languages import LANGUAGES
 class MainMenuView(arcade.View):
     """Главное меню игры"""
 
-    def __init__(self, window):
+    def __init__(self, window: arcade.Window):
         super().__init__()
         self.window = window  # Ссылка на главное окно
 
         self.original_width = settings.width
         self.original_height = settings.height
 
-        self.language = window.language
+        self.language: int = window.language
 
         self.timer = 0.0
+
+        self.reg = reg
 
         self.batch = Batch()
 
@@ -27,12 +29,11 @@ class MainMenuView(arcade.View):
 
         self.background_sprite_list = arcade.SpriteList()
         self.background_sprite = None
-        self.background_image_path = 'resources/textures/backgrounds/main_menu_background.png'
 
         self.button_textures = {
-            'normal': arcade.load_texture('resources/textures/ui/buttons/normal/main_menu_button.png'),
-            'hovered': arcade.load_texture('resources/textures/ui/buttons/hovered/main_menu_button.png'),
-            'pressed': arcade.load_texture('resources/textures/ui/buttons/pressed/main_menu_button.png')
+            'normal': self.reg.get('textures/ui/buttons/normal/main_menu_button.png'),
+            'hovered': self.reg.get('textures/ui/buttons/hovered/main_menu_button.png'),
+            'pressed': self.reg.get('textures/ui/buttons/pressed/main_menu_button.png')
         }
 
         self.button_width = self.button_textures['normal'].width * 2.7
@@ -42,8 +43,6 @@ class MainMenuView(arcade.View):
         self.original_font_size = 28
 
         self.ui_buttons = []
-
-        arcade.load_font('resources/fonts/montserrat.ttf')
 
         self.window.play_background_music()
 
@@ -81,7 +80,7 @@ class MainMenuView(arcade.View):
         self.create_buttons()
 
     def load_background(self):
-        texture = arcade.load_texture(self.background_image_path)
+        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
 
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,

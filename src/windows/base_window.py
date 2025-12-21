@@ -1,5 +1,6 @@
 import arcade
 from src.settings import settings
+from src.registry import reg
 
 
 class BaseWindow(arcade.Window):
@@ -12,6 +13,8 @@ class BaseWindow(arcade.Window):
         self.center_window()
         self.background_color = arcade.color.BLACK
         self.language = settings.language
+
+        self.reg = reg
 
         self.background_music = None
         self.music_player = None
@@ -49,8 +52,8 @@ class BaseWindow(arcade.Window):
 
     def play_background_music(self):
         if not self.is_music_playing:
-            self.background_music = arcade.load_sound(
-                'resources/sounds/music/main_theme.ogg')
+            self.background_music = self.reg.get(
+                'sounds/music/main_theme.ogg')
             self.music_player = arcade.play_sound(
                 self.background_music, loop=True)
             self.is_music_playing = True

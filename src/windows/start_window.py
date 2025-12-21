@@ -7,13 +7,15 @@ from resources.languages import LANGUAGES
 
 
 class StartView(arcade.View):
-    def __init__(self, window):
+    def __init__(self, window: arcade.Window):
         super().__init__()
         self.window = window
 
-        self.language = self.window.language
+        self.language: int = self.window.language
 
         self.timer = 0.0
+
+        self.reg = reg
 
         self.original_width = settings.width
         self.original_height = settings.height
@@ -22,13 +24,12 @@ class StartView(arcade.View):
 
         self.background_sprite_list = arcade.SpriteList()
         self.background_sprite = None
-        self.background_image_path = 'resources/textures/backgrounds/main_menu_background.png'
 
         self.overlay = None
         self.overlay_sprite_list = arcade.SpriteList()
 
-        self.wind_sound = arcade.load_sound(
-            'resources/sounds/sfx/ambient/wind.wav')
+        self.wind_sound: arcade.Sound = self.reg.get(
+            'sounds/sfx/ambient/wind.wav')
 
         self.fade_background_duration = self.wind_sound.get_length()
 
@@ -37,8 +38,6 @@ class StartView(arcade.View):
         self.text_to_continue_timer = 0.0
 
         self.click_count = 0
-
-        arcade.load_font('resources/fonts/montserrat.ttf')
 
         self.text_to_continue = arcade.Text(
             text=LANGUAGES['press_for_cont'][self.language],
@@ -114,8 +113,7 @@ class StartView(arcade.View):
         self.window.switch_view('main_menu')
 
     def load_background(self):
-        texture = arcade.load_texture(self.background_image_path)
-
+        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,

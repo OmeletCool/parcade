@@ -3,16 +3,19 @@ from pyglet.graphics import Batch
 from resources.languages import LANGUAGES
 from arcade.gui import *
 from src.settings import settings
+from src.registry import reg
 
 
 class SettingsMenuView(arcade.View):
 
-    def __init__(self, window):
+    def __init__(self, window: arcade.Window):
         super().__init__()
         self.window = window
-        self.language = self.window.language
+        self.language: int = self.window.language
 
         self.batch = Batch()
+
+        self.reg = reg
 
         self.texts = {
             'title': LANGUAGES['settings_button'][self.language],
@@ -36,10 +39,6 @@ class SettingsMenuView(arcade.View):
 
         # Все текстовые объекты будем хранить в списке
         self.text_objects = []
-
-        self.background_image_path = 'resources/textures/backgrounds/settings_background.png'
-
-        arcade.load_font('resources/fonts/montserrat.ttf')
 
     def create_lang_dropdown(self):
         self.ui_manager.clear()
@@ -148,18 +147,15 @@ class SettingsMenuView(arcade.View):
     def on_draw(self):
         self.clear()
 
-        # Фон
         if self.background_sprite_list:
             self.background_sprite_list.draw()
 
-        # Все текстовые объекты отрисовываются через batch
         self.batch.draw()
 
         self.ui_manager.draw()
 
     def on_key_press(self, symbol, modifiers):
         """Обработка нажатия клавиш"""
-        # ESC для возврата в главное меню
         if symbol == arcade.key.ESCAPE:
             self.window.switch_view("main_menu")
 
@@ -172,30 +168,19 @@ class SettingsMenuView(arcade.View):
 
     def load_background(self):
         """Загрузка фона"""
-        try:
-            texture = arcade.load_texture(self.background_image_path)
-            self.background_sprite = arcade.Sprite(
-                path_or_texture=texture,
-                center_x=self.window.width // 2,
-                center_y=self.window.height // 2
-            )
 
-            # Растягиваем фон на весь экран
-            self.background_sprite.width = self.window.width
-            self.background_sprite.height = self.window.height
+        texture = self.reg.get(
+            'textures/backgrounds/settings_background.png')
+        self.background_sprite = arcade.Sprite(
+            path_or_texture=texture,
+            center_x=self.window.width // 2,
+            center_y=self.window.height // 2
+        )
 
-            self.background_sprite_list.append(self.background_sprite)
-        except Exception as e:
-            print(f"Ошибка загрузки фона настроек: {e}")
-            # Если фон не загрузился, используем черный фон
-            self.background_sprite = arcade.SpriteSolidColor(
-                self.window.width,
-                self.window.height,
-                arcade.color.DARK_GRAY
-            )
-            self.background_sprite.center_x = self.window.width // 2
-            self.background_sprite.center_y = self.window.height // 2
-            self.background_sprite_list.append(self.background_sprite)
+        self.background_sprite.width = self.window.width
+        self.background_sprite.height = self.window.height
+
+        self.background_sprite_list.append(self.background_sprite)
 
     def update_background_position_and_size(self):
         if not self.background_sprite:
