@@ -38,6 +38,9 @@ class BaseWindow(arcade.Window):
             elif view_name == 'start_window':
                 from src.windows.start_window import StartView
                 self.views[view_name] = StartView(self)
+            elif view_name == 'creators_window':
+                from src.windows.creators_window import CreatorsView
+                self.views[view_name] = CreatorsView(self)
 
         return self.views[view_name]
 

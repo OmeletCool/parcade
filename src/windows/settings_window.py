@@ -21,7 +21,8 @@ class SettingsMenuView(arcade.View):
             'title': LANGUAGES['settings_button'][self.language],
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
-            'music': LANGUAGES['music'][self.language]
+            'music': LANGUAGES['music'][self.language],
+            'creators': LANGUAGES['creators'][self.language]
         }
 
         # Элементы UI
@@ -36,15 +37,40 @@ class SettingsMenuView(arcade.View):
         self.return_text = None
         self.change_language_text = None
         self.language_text = None
+        self.creators_text = None
 
         # Все текстовые объекты будем хранить в списке
         self.text_objects = []
 
+    def create_creators_button(self):
+        creators_x = self.window.width // 2
+        creators_y = self.window.height * 0.3
+        
+        self.creators_button = UITextureButton(
+            x=creators_x - 75,
+            y=creators_y,
+            width=150,
+            height=45,
+            texture=arcade.Texture.create_empty("transparent", (150, 45)),
+            texture_hovered=arcade.Texture.create_empty("transparent_hover", (150, 45)),
+            texture_pressed=arcade.Texture.create_empty("transparent_pressed", (150, 45))
+        )
+        
+        @self.creators_button.event("on_click")
+        def on_creators_click(event):
+            self.on_creators_button_clicked()
+        
+        return self.creators_button
+
+    def on_creators_button_clicked(self, event):
+        self.window.switch_view('creators_window')
+
+
     def create_lang_dropdown(self):
         self.ui_manager.clear()
 
-        center_x = self.window.width // 2
-        center_y = self.window.height // 2
+        center_x = self.window.width // 6
+        center_y = self.window.height * 0.5
 
         offset_x = -120
         offset_y = 80
@@ -95,10 +121,10 @@ class SettingsMenuView(arcade.View):
 
         self.title_text = arcade.Text(
             text=self.texts['title'],
-            x=self.window.width // 1.4,
-            y=self.window.height * 0.8,
+            x=self.window.width // 2,
+            y=self.window.height * 0.818,
             color=arcade.color.BLACK,
-            font_size=32,
+            font_size=30,
             font_name='montserrat',
             anchor_x='center',
             batch=self.batch
@@ -109,7 +135,7 @@ class SettingsMenuView(arcade.View):
             text=self.texts['press_to_return'],
             x=self.window.width // 2,
             y=self.window.height * 0.02,
-            color=arcade.color.BLACK,
+            color=arcade.color.WHITE,
             font_size=18,
             font_name='montserrat',
             anchor_x='center',
@@ -119,10 +145,10 @@ class SettingsMenuView(arcade.View):
 
         self.change_language_text = arcade.Text(
             text=self.texts['change_language'],
-            x=self.window.width // 4.1,
-            y=self.window.height * 0.71,
+            x=self.window.width // 6.45,
+            y=self.window.height * 0.69,
             color=arcade.color.BLACK,
-            font_size=28,
+            font_size=20,
             font_name='montserrat',
             anchor_x='center',
             batch=self.batch
@@ -131,15 +157,27 @@ class SettingsMenuView(arcade.View):
 
         self.music_text = arcade.Text(
             text=self.texts['music'],
-            x=self.window.width // 3.15,
-            y=self.window.height * 0.51,
+            x=self.window.width // 3.353,
+            y=self.window.height * 0.39,
+            color=arcade.color.BLACK,
+            font_size=16,
+            font_name='montserrat',
+            anchor_x='center',
+            batch=self.batch
+        )
+        self.text_objects.append(self.music_text)
+        
+        self.creators_text = arcade.Text(
+            text=self.texts['creators'],
+            x=self.window.width // 2,
+            y=self.window.height * 0.322,
             color=arcade.color.BLACK,
             font_size=18,
             font_name='montserrat',
             anchor_x='center',
             batch=self.batch
         )
-        self.text_objects.append(self.music_text)
+        self.text_objects.append(self.creators_text)
 
     def on_show_view(self):
         self.setup()
@@ -170,7 +208,7 @@ class SettingsMenuView(arcade.View):
         """Загрузка фона"""
 
         texture = self.reg.get(
-            'textures/backgrounds/settings_background.png')
+            'textures/backgrounds/settings_background.jpg')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,
@@ -196,21 +234,26 @@ class SettingsMenuView(arcade.View):
             'title': LANGUAGES['settings_button'][self.language],
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
-            'music': LANGUAGES['music'][self.language]
+            'music': LANGUAGES['music'][self.language],
+            'creators': LANGUAGES['creators'][self.language]
         }
 
         self.title_text.text = self.texts['title']
-        self.title_text.x = self.window.width // 1.4
-        self.title_text.y = self.window.height * 0.8
+        self.title_text.x = self.window.width // 2
+        self.title_text.y = self.window.height * 0.818
 
         self.return_text.text = self.texts['press_to_return']
         self.return_text.x = self.window.width // 2
         self.return_text.y = self.window.height * 0.02
 
         self.change_language_text.text = self.texts['change_language']
-        self.change_language_text.x = self.window.width // 4.1
-        self.change_language_text.y = self.window.height * 0.71
+        self.change_language_text.x = self.window.width // 6.45
+        self.change_language_text.y = self.window.height * 0.69
 
         self.music_text.text = self.texts['music']
-        self.music_text.x = self.window.width // 3.15
-        self.music_text.y = self.window.height * 0.51
+        self.music_text.x = self.window.width // 3.353
+        self.music_text.y = self.window.height * 0.39
+
+        self.creators_text.text = self.texts['creators']
+        self.creators_text.x = self.window.width // 2
+        self.creators_text.y = self.window.height * 0.322
