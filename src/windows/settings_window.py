@@ -22,7 +22,8 @@ class SettingsMenuView(arcade.View):
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
             'music': LANGUAGES['music'][self.language],
-            'creators': LANGUAGES['creators'][self.language]
+            'creators': LANGUAGES['creators'][self.language],
+            'glossary': LANGUAGES['Glossary'][self.language]
         }
 
         # Элементы UI
@@ -38,6 +39,7 @@ class SettingsMenuView(arcade.View):
         self.change_language_text = None
         self.language_text = None
         self.creators_text = None
+        self.glossary_text = None
         self.music_button = None
         self.music_button_text = "ON" 
 
@@ -92,13 +94,10 @@ class SettingsMenuView(arcade.View):
             self.window.enable_music()
             self.music_button_text = "ON"
         
-        # Обновляем текст на кнопке
         if self.music_button:
             self.music_button.text = self.music_button_text
         
-        # Сохраняем настройку
         self.window.save_music_setting()
-        print(f"Музыка переключена на: {self.music_button_text}")
 
     def enable_music(self):
         # Включить всю музыку в игре
@@ -209,6 +208,29 @@ class SettingsMenuView(arcade.View):
             self.update_texts()
         
         return self.lang_button
+    
+    def create_glossary_button(self):
+        glossary_x = self.window.width // 1.22
+        glossary_y = self.window.height * 0.325
+        
+        self.glossary_button = UITextureButton(
+            x=glossary_x - 75,
+            y=glossary_y,
+            width=150,
+            height=45,
+            texture=arcade.Texture.create_empty("transparent", (150, 45)),
+            texture_hovered=arcade.Texture.create_empty("transparent_hover", (150, 45)),
+            texture_pressed=arcade.Texture.create_empty("transparent_pressed", (150, 45))
+        )
+        
+        @self.glossary_button.event("on_click")
+        def on_glossary_click(event):
+            self.on_glossary_button_clicked()
+        
+        return self.glossary_button
+
+    def on_glossary_button_clicked(self):
+        self.window.switch_view('glossary_window')
 
     def update_texts(self):
         self.texts = {
@@ -216,7 +238,8 @@ class SettingsMenuView(arcade.View):
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
             'music': LANGUAGES['music'][self.language],
-            'creators': LANGUAGES['creators'][self.language]
+            'creators': LANGUAGES['creators'][self.language],
+            'glossary': LANGUAGES['Glossary'][self.language]
         }
         
         # Обновляем каждый текстовый объект, если он существует
@@ -230,6 +253,8 @@ class SettingsMenuView(arcade.View):
             self.music_text.text = self.texts['music']
         if self.creators_text:
             self.creators_text.text = self.texts['creators']
+        if self.glossary_text:
+            self.glossary_text.text = self.texts['glossary']
 
 
     def create_lang_dropdown(self):
@@ -243,6 +268,9 @@ class SettingsMenuView(arcade.View):
         
         music_button = self.create_music_button()
         self.ui_manager.add(music_button)
+        
+        glossary_button = self.create_glossary_button()
+        self.ui_manager.add(glossary_button) 
 
     def setup(self):
         self.load_background()
@@ -314,6 +342,20 @@ class SettingsMenuView(arcade.View):
             batch=self.batch
         )
         self.text_objects.append(self.creators_text)
+        
+        self.glossary_text = arcade.Text(
+            text=self.texts['glossary'],
+            x=self.window.width // 1.22,
+            y=self.window.height * 0.325,
+            color=arcade.color.BLACK,
+            font_size=18,
+            font_name='montserrat',
+            anchor_x='center',
+            batch=self.batch
+        )
+        
+        self.text_objects.append(self.glossary_text)
+        
 
     def on_show_view(self):
         self.setup()
@@ -375,7 +417,8 @@ class SettingsMenuView(arcade.View):
             'press_to_return': LANGUAGES['Esc_to_return'][self.language],
             'change_language': LANGUAGES['change_language'][self.language],
             'music': LANGUAGES['music'][self.language],
-            'creators': LANGUAGES['creators'][self.language]
+            'creators': LANGUAGES['creators'][self.language],
+            'glossary': LANGUAGES['Glossary'][self.language]
         }
 
         self.title_text.text = self.texts['title']
@@ -397,3 +440,7 @@ class SettingsMenuView(arcade.View):
         self.creators_text.text = self.texts['creators']
         self.creators_text.x = self.window.width // 1.56
         self.creators_text.y = self.window.height * 0.27
+    
+        self.glossary_text.text = self.texts['glossary']
+        self.glossary_text.x = self.window.width // 1.22
+        self.glossary_text.y = self.window.height * 0.325
