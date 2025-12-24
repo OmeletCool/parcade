@@ -38,13 +38,103 @@ class SettingsMenuView(arcade.View):
         self.change_language_text = None
         self.language_text = None
         self.creators_text = None
+        self.music_button = None
+        self.music_button_text = "ON" 
 
         # Все текстовые объекты будем хранить в списке
         self.text_objects = []
+        
+    def create_music_button(self):
+        music_x = self.window.width // 3.7
+        music_y = self.window.height * 0.39 - 60
+        
+        style = {
+            "normal": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=16,
+                font_color=arcade.color.BLACK,
+                bg=(0, 0, 0, 0),
+            ),
+            "hover": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=16,
+                font_color=arcade.color.BLACK,
+                bg=(245, 245, 220, 255),
+            ),
+            "press": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=16,
+                font_color=arcade.color.BLACK,
+                bg=(245, 245, 220, 255),
+            )
+        }
+        
+        self.music_button = UIFlatButton(
+            x=music_x,
+            y=music_y,
+            width=80,
+            height=35,
+            text=self.music_button_text,
+            style=style
+        )
+        
+        @self.music_button.event("on_click")
+        def on_music_button_click(event):
+            self.toggle_music()
+        
+        return self.music_button
+
+    def toggle_music(self):
+        if self.window.music_enabled:
+            self.window.disable_music()
+            self.music_button_text = "OFF"
+        else:
+            self.window.enable_music()
+            self.music_button_text = "ON"
+        
+        # Обновляем текст на кнопке
+        if self.music_button:
+            self.music_button.text = self.music_button_text
+        
+        # Сохраняем настройку
+        self.window.save_music_setting()
+        print(f"Музыка переключена на: {self.music_button_text}")
+
+    def enable_music(self):
+        # Включить всю музыку в игре
+        if hasattr(self.window, 'main_theme'):
+            self.window.background_music.play()
+            self.window.background_music.volume = 1.0
+        
+        print("Музыка включена")
+
+    def disable_music(self):
+        # Выключить всю музыку в игре
+        if hasattr(self.window, 'main_theme'):
+            self.window.background_music.pause()
+            self.window.background_music.volume = 0.0
+
+        
+        print("Музыка выключена")
+
+    def save_music_setting(self):
+        with open('data/music.txt', 'w') as music_file:
+            music_file.write("ON" if self.music_enabled else "OFF")
+
+    def load_music_setting(self):
+        try:
+            with open('data/music.txt', 'r') as music_file:
+                setting = music_file.read().strip()
+                self.music_enabled = (setting == "ON")
+                self.music_button_text = "ON" if self.music_enabled else "OFF"
+        except FileNotFoundError:
+            self.music_enabled = True
+            self.music_button_text = "ON"
+            self.save_music_setting()
 
     def create_creators_button(self):
-        creators_x = self.window.width // 2
-        creators_y = self.window.height * 0.3
+        creators_x = self.window.width // 1.56
+        creators_y = self.window.height * 0.27
         
         self.creators_button = UITextureButton(
             x=creators_x - 75,
@@ -62,15 +152,15 @@ class SettingsMenuView(arcade.View):
         
         return self.creators_button
 
-    def on_creators_button_clicked(self, event):
+    def on_creators_button_clicked(self):
         self.window.switch_view('creators_window')
 
 
     def create_lang_dropdown(self):
         self.ui_manager.clear()
 
-        center_x = self.window.width // 6
-        center_y = self.window.height * 0.5
+        center_x = self.window.width // 4.8
+        center_y = self.window.height * 0.53
 
         offset_x = -120
         offset_y = 80
@@ -84,16 +174,45 @@ class SettingsMenuView(arcade.View):
             LANGUAGES['language'][2]
         ]
 
+        style = {
+            "normal": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=14,
+                font_color=arcade.color.BLACK,
+                bg=(0, 0, 0, 0),  # Прозрачный фон
+            ),
+            "hover": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=14,
+                font_color=arcade.color.BLACK,
+                bg=(245, 245, 220, 255),  # Бежевый при наведении
+            ),
+            "press": UIFlatButton.UIStyle(
+                font_name='montserrat',
+                font_size=14,
+                font_color=arcade.color.BLACK,
+                bg=(245, 245, 220, 255),  # Бежевый при нажатии
+            )
+        }
+
+        # Создаем выпадающий список
         self.lang_dropdown = UIDropdown(
             x=pos_x,
             y=pos_y,
             default=LANGUAGES['language'][self.language],
             options=options,
-            width=200,
-            height=45,
+            width=100,
+            height=35,
+            style=style
         )
-
+        
         self.ui_manager.add(self.lang_dropdown)
+        
+        creators_button = self.create_creators_button()
+        self.ui_manager.add(creators_button)
+        
+        music_button = self.create_music_button()
+        self.ui_manager.add(music_button)   
 
         @self.lang_dropdown.event('on_change')
         def on_language_change(event: UIOnChangeEvent):
@@ -114,6 +233,11 @@ class SettingsMenuView(arcade.View):
 
     def setup(self):
         self.load_background()
+        
+        self.window.load_music_setting()
+        self.music_button_text = "ON" if self.window.music_enabled else "OFF"
+        
+        self.load_music_setting()
 
         self.text_objects.clear()
 
@@ -169,15 +293,20 @@ class SettingsMenuView(arcade.View):
         
         self.creators_text = arcade.Text(
             text=self.texts['creators'],
-            x=self.window.width // 2,
-            y=self.window.height * 0.322,
+            x=self.window.width // 1.56,
+            y=self.window.height * 0.27,
             color=arcade.color.BLACK,
-            font_size=18,
+            font_size=24,
             font_name='montserrat',
             anchor_x='center',
             batch=self.batch
         )
         self.text_objects.append(self.creators_text)
+        
+        if self.window.music_enabled:
+            self.window.enable_music()     
+        else:                    
+            self.window.disable_music()
 
     def on_show_view(self):
         self.setup()
@@ -192,20 +321,24 @@ class SettingsMenuView(arcade.View):
 
         self.ui_manager.draw()
 
+    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        self.ui_manager.on_mouse_press(x, y, button, modifiers)
+        
+    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
+        self.ui_manager.on_mouse_release(x, y, button, modifiers)
+
     def on_key_press(self, symbol, modifiers):
-        """Обработка нажатия клавиш"""
         if symbol == arcade.key.ESCAPE:
+            self.window.save_music_setting()
             self.window.switch_view("main_menu")
 
     def on_resize(self, width: float, height: float):
-        """Обработка изменения размера окна"""
         super().on_resize(width, height)
         self.update_background_position_and_size()
         self.update_text_position_and_size_and_lang()
         self.create_lang_dropdown()
 
     def load_background(self):
-        """Загрузка фона"""
 
         texture = self.reg.get(
             'textures/backgrounds/settings_background.jpg')
@@ -255,5 +388,5 @@ class SettingsMenuView(arcade.View):
         self.music_text.y = self.window.height * 0.39
 
         self.creators_text.text = self.texts['creators']
-        self.creators_text.x = self.window.width // 2
-        self.creators_text.y = self.window.height * 0.322
+        self.creators_text.x = self.window.width // 1.56
+        self.creators_text.y = self.window.height * 0.27

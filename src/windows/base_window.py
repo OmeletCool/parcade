@@ -19,6 +19,7 @@ class BaseWindow(arcade.Window):
         self.background_music = None
         self.music_player = None
         self.is_music_playing = False
+        self.music_enabled = True
 
         # Храним представления
         self.views = {}
@@ -54,11 +55,11 @@ class BaseWindow(arcade.Window):
             self.close()
 
     def play_background_music(self):
-        if not self.is_music_playing:
+        if not self.is_music_playing and self.music_enabled:
             self.background_music = self.reg.get(
                 'sounds/music/main_theme.ogg')
             self.music_player = arcade.play_sound(
-                self.background_music, loop=True)
+                self.background_music, loop=True, volume=1.0)
             self.is_music_playing = True
 
     def stop_background_music(self):
@@ -66,3 +67,26 @@ class BaseWindow(arcade.Window):
             arcade.stop_sound(self.music_player)
             self.is_music_playing = False
             self.music_player = None
+    def enable_music(self):
+        self.music_enabled = True
+        self.play_background_music()
+
+    def disable_music(self):
+        self.music_enabled = False
+        self.stop_background_music()
+
+    def load_music_setting(self):
+        try:
+            with open('data/music.txt', 'r') as music_file:
+                setting = music_file.read().strip()
+                self.music_enabled = (setting == "ON")
+                print(f"Загружена настройка музыки: {setting}")
+        except FileNotFoundError:
+            self.music_enabled = True
+            print("Файл настроек музыки не найден, использую настройки по умолчанию (ON)")
+            self.save_music_setting()
+
+    def save_music_setting(self):
+        with open('data/music.txt', 'w') as music_file:
+            music_file.write("ON" if self.music_enabled else "OFF")
+            print(f"Сохранена настройка музыки: {'ON' if self.music_enabled else 'OFF'}")
