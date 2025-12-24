@@ -154,13 +154,10 @@ class SettingsMenuView(arcade.View):
 
     def on_creators_button_clicked(self):
         self.window.switch_view('creators_window')
-
-
-    def create_lang_dropdown(self):
-        self.ui_manager.clear()
-
-        center_x = self.window.width // 4.8
-        center_y = self.window.height * 0.53
+        
+    def create_lang_button(self):
+        center_x = self.window.width // 5.3
+        center_y = self.window.height * 0.51
 
         offset_x = -120
         offset_y = 80
@@ -168,79 +165,94 @@ class SettingsMenuView(arcade.View):
         pos_x = center_x + offset_x
         pos_y = center_y + offset_y
 
-        options = [
-            LANGUAGES['language'][0],
-            LANGUAGES['language'][1],
-            LANGUAGES['language'][2]
-        ]
-
-        style = {
-            "normal": UIFlatButton.UIStyle(
-                font_name='montserrat',
-                font_size=14,
-                font_color=arcade.color.BLACK,
-                bg=(0, 0, 0, 0),  # Прозрачный фон
-            ),
-            "hover": UIFlatButton.UIStyle(
-                font_name='montserrat',
-                font_size=14,
-                font_color=arcade.color.BLACK,
-                bg=(245, 245, 220, 255),  # Бежевый при наведении
-            ),
-            "press": UIFlatButton.UIStyle(
-                font_name='montserrat',
-                font_size=14,
-                font_color=arcade.color.BLACK,
-                bg=(245, 245, 220, 255),  # Бежевый при нажатии
-            )
-        }
-
-        # Создаем выпадающий список
-        self.lang_dropdown = UIDropdown(
+        # Создаем кнопку для языка
+        self.lang_button = UIFlatButton(
             x=pos_x,
             y=pos_y,
-            default=LANGUAGES['language'][self.language],
-            options=options,
-            width=100,
+            width=150,
             height=35,
-            style=style
+            text=LANGUAGES['language'][self.language],
+            style={
+                "normal": UIFlatButton.UIStyle(
+                    font_name='montserrat',
+                    font_size=16,
+                    font_color=arcade.color.BLACK,
+                    bg=(0, 0, 0, 0),
+                ),
+                "hover": UIFlatButton.UIStyle(
+                    font_name='montserrat',
+                    font_size=16,
+                    font_color=arcade.color.BLACK,
+                    bg=(245, 245, 220, 255),
+                ),
+                "press": UIFlatButton.UIStyle(
+                    font_name='montserrat',
+                    font_size=16,
+                    font_color=arcade.color.BLACK,
+                    bg=(245, 245, 220, 255),
+                )
+            }
         )
         
-        self.ui_manager.add(self.lang_dropdown)
+        @self.lang_button.event("on_click")
+        def on_lang_button_click(event):
+            self.language = (self.language + 1) % 3
+            
+            self.lang_button.text = LANGUAGES['language'][self.language]
+            
+            self.window.language = self.language
+            
+            with open('data/language.txt', 'w') as lang:
+                lang.write(next((key for key, value in settings.lang_dict.items(
+                ) if value == self.language), 'russian'))
+            
+            self.update_texts()
+        
+        return self.lang_button
+
+    def update_texts(self):
+        self.texts = {
+            'title': LANGUAGES['settings_button'][self.language],
+            'press_to_return': LANGUAGES['Esc_to_return'][self.language],
+            'change_language': LANGUAGES['change_language'][self.language],
+            'music': LANGUAGES['music'][self.language],
+            'creators': LANGUAGES['creators'][self.language]
+        }
+        
+        # Обновляем каждый текстовый объект, если он существует
+        if self.title_text:
+            self.title_text.text = self.texts['title']
+        if self.return_text:
+            self.return_text.text = self.texts['press_to_return']
+        if self.change_language_text:
+            self.change_language_text.text = self.texts['change_language']
+        if self.music_text:
+            self.music_text.text = self.texts['music']
+        if self.creators_text:
+            self.creators_text.text = self.texts['creators']
+
+
+    def create_lang_dropdown(self):
+        self.ui_manager.clear()
+        
+        lang_button = self.create_lang_button()
+        self.ui_manager.add(lang_button)
         
         creators_button = self.create_creators_button()
         self.ui_manager.add(creators_button)
         
         music_button = self.create_music_button()
-        self.ui_manager.add(music_button)   
-
-        @self.lang_dropdown.event('on_change')
-        def on_language_change(event: UIOnChangeEvent):
-            if event.new_value == LANGUAGES['language'][0]:
-                self.language = 0
-            elif event.new_value == LANGUAGES['language'][1]:
-                self.language = 1
-            elif event.new_value == LANGUAGES['language'][2]:
-                self.language = 2
-
-            self.window.language = self.language
-
-            with open('data/language.txt', 'w') as lang:
-                lang.write(next((key for key, value in settings.lang_dict.items(
-                ) if value == self.language), 'russian'))
-
-            self.update_text_position_and_size_and_lang()
+        self.ui_manager.add(music_button)
 
     def setup(self):
         self.load_background()
         
         self.window.load_music_setting()
         self.music_button_text = "ON" if self.window.music_enabled else "OFF"
-        
-        self.load_music_setting()
 
         self.text_objects.clear()
-
+        
+        # Создаем UI элементы
         self.create_lang_dropdown()
 
         self.title_text = arcade.Text(
@@ -302,11 +314,6 @@ class SettingsMenuView(arcade.View):
             batch=self.batch
         )
         self.text_objects.append(self.creators_text)
-        
-        if self.window.music_enabled:
-            self.window.enable_music()     
-        else:                    
-            self.window.disable_music()
 
     def on_show_view(self):
         self.setup()

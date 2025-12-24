@@ -1,6 +1,7 @@
 import arcade
 from src.settings import settings
 from src.registry import reg
+import pyglet
 
 
 class BaseWindow(arcade.Window):
@@ -15,6 +16,8 @@ class BaseWindow(arcade.Window):
         self.language = settings.language
 
         self.reg = reg
+        
+        self.set_icon(pyglet.image.load("resources/textures/ui/icons/icon.jpg"))
 
         self.background_music = None
         self.music_player = None
