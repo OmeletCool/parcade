@@ -34,7 +34,7 @@ class GlossaryView(arcade.View):
         self.update_background_position_and_size()
 
     def load_background(self):
-        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
+        texture = self.reg.get('textures/backgrounds/glossary_window.png')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,
