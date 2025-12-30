@@ -16,13 +16,16 @@ class BaseWindow(arcade.Window):
         self.language = settings.language
 
         self.reg = reg
-        
-        self.set_icon(pyglet.image.load("resources/textures/ui/icons/icon.jpg"))
+
+        self.set_icon(pyglet.image.load(
+            "resources/textures/ui/icons/icon.jpg"))
 
         self.background_music = None
-        self.music_player = None
+        self.music_players = {}
+        self.forced_music = {}
         self.is_music_playing = False
-        self.music_enabled = True
+        self.music_enabled = False
+        self.load_music_setting()
 
         # Храним представления
         self.views = {}
@@ -57,39 +60,38 @@ class BaseWindow(arcade.Window):
         if key == arcade.key.Q:
             self.close()
 
-    def play_background_music(self):
-        if not self.is_music_playing and self.music_enabled:
-            self.background_music = self.reg.get(
-                'sounds/music/main_theme.ogg')
-            self.music_player = arcade.play_sound(
-                self.background_music, loop=True, volume=1.0)
-            self.is_music_playing = True
+    def play_definite_music(self, path: str, volume=1.0, isLooping=False):
+        if self.music_enabled:
+            self.music_players[path] = arcade.play_sound(
+                self.reg.get(path), volume, isLooping)
 
-    def stop_background_music(self):
-        if self.music_player:
-            arcade.stop_sound(self.music_player)
-            self.is_music_playing = False
-            self.music_player = None
-    def enable_music(self):
-        self.music_enabled = True
-        self.play_background_music()
+    def stop_definite_music(self, path: str):
+        if self.music_players[path]:
+            arcade.stop_sound(self.music_players[path])
+            self.music_players.pop(path)
 
     def disable_music(self):
-        self.music_enabled = False
-        self.stop_background_music()
+        if self.music_enabled:
+            for player in self.music_players.values():
+                arcade.stop_sound(player)
+
+            self.music_players.clear()
+            self.music_enabled = False
+
+    def enable_music(self):
+        if not self.music_enabled:
+            self.music_enabled = True
+            if self.forced_music:
+                for music in self.forced_music.values():
+                    self.music_players[music['path']] = arcade.play_sound(
+                        self.reg.get(music['path']), music['volume'], loop=music['isLooping'])
 
     def load_music_setting(self):
-        try:
-            with open('data/music.txt', 'r') as music_file:
-                setting = music_file.read().strip()
-                self.music_enabled = (setting == "ON")
-                print(f"Загружена настройка музыки: {setting}")
-        except FileNotFoundError:
-            self.music_enabled = True
-            print("Файл настроек музыки не найден, использую настройки по умолчанию (ON)")
-            self.save_music_setting()
+        with open('data/music.txt', 'r') as music_file:
+            setting = music_file.read().strip()
+            self.music_enabled = (setting == "ON")
+        self.save_music_setting()
 
     def save_music_setting(self):
         with open('data/music.txt', 'w') as music_file:
             music_file.write("ON" if self.music_enabled else "OFF")
-            print(f"Сохранена настройка музыки: {'ON' if self.music_enabled else 'OFF'}")

@@ -43,8 +43,19 @@ class MainMenuView(arcade.View):
         self.original_font_size = 28
 
         self.ui_buttons = []
+        self.hovered_sound = False
 
-        self.window.play_background_music()
+        self.window.forced_music['sounds/music/main_theme.ogg'] = {
+            'path': 'sounds/music/main_theme.ogg',
+            'volume': 1.0,
+            'isLooping': True
+        }
+
+        self.window.play_definite_music(
+            self.window.forced_music['sounds/music/main_theme.ogg']['path'],
+            self.window.forced_music['sounds/music/main_theme.ogg']['volume'],
+            self.window.forced_music['sounds/music/main_theme.ogg']['isLooping']
+        )
 
     def setup(self):
         """Инициализация представления"""
@@ -72,6 +83,14 @@ class MainMenuView(arcade.View):
     def on_update(self, delta_time):
         """Обновление логики"""
         self.timer += delta_time
+
+        if any([button.hovered for button in self.ui_buttons]):
+            if not self.hovered_sound:
+                self.window.play_definite_music(
+                    'sounds/sfx/ui/on_button_hover.wav')
+                self.hovered_sound = True
+        elif not all([button.hovered for button in self.ui_buttons]):
+            self.hovered_sound = False
 
     def on_resize(self, width: float, height: float):
         """Обработка изменения размера окна"""
