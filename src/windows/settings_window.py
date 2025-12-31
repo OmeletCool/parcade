@@ -93,7 +93,9 @@ class SettingsMenuView(arcade.View):
         else:
             self.window.enable_music()
             self.music_button_text = "ON"
-
+            
+        if self.music_button:
+            self.music_button.text = self.music_button_text
 
     def enable_music(self):
         # Включить всю музыку в игре
