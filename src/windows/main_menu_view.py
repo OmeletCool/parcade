@@ -43,7 +43,7 @@ class MainMenuView(arcade.View):
         self.original_font_size = 28
 
         self.ui_buttons = []
-        self.hovered_sound = False
+        self.hovered_sound = True
 
         self.window.forced_music['sounds/music/main_theme.ogg'] = {
             'path': 'sounds/music/main_theme.ogg',
@@ -82,7 +82,6 @@ class MainMenuView(arcade.View):
 
     def on_update(self, delta_time):
         """Обновление логики"""
-        self.timer += delta_time
 
         if any([button.hovered for button in self.ui_buttons]):
             if not self.hovered_sound:
