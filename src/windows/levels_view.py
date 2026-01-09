@@ -1,5 +1,6 @@
 import arcade
 from src.registry import reg
+from resources.languages import LANGUAGES
 
 
 class LevelsView(arcade.View):
@@ -7,6 +8,7 @@ class LevelsView(arcade.View):
         super().__init__()
         self.window = window
         self.reg = reg
+        self.language: int = self.window.language
 
         self.current_episode = 0
         self.target_offset = 0.0
@@ -18,12 +20,15 @@ class LevelsView(arcade.View):
         self.background_sprite = None
 
         self.texts = []
+
         self.ui_text_left = arcade.Text(
-            "<", 0, 0, arcade.color.WHITE, font_size=50, anchor_y="center")
+            "<", 0, 0, arcade.color.WHITE, font_size=60, anchor_y="center", font_name='MS PGothic')
         self.ui_text_right = arcade.Text(
-            ">", 0, 0, arcade.color.WHITE, font_size=50, anchor_y="center")
+            ">", 0, 0, arcade.color.WHITE, font_size=60, anchor_y="center", font_name='MS PGothic')
 
     def setup(self):
+        self.language = self.window.language
+
         self.episode_buttons.clear()
         self.background_sprite_list.clear()
         self.texts.clear()
@@ -57,9 +62,11 @@ class LevelsView(arcade.View):
                 btn.center_y = float(self.window.height / 2)
 
             self.episode_buttons.append(btn)
+            
+            label_text = f"{LANGUAGES['episodes'][self.language]} {i + 1}"
 
             label = arcade.Text(
-                f"ЭПИЗОД {i + 1}",
+                label_text,
                 0, 0,
                 arcade.color.WHITE,
                 font_size=30,
@@ -73,7 +80,6 @@ class LevelsView(arcade.View):
         self.current_offset = self.target_offset
 
     def _update_ui_positions(self):
-        """Обновление статических позиций UI элементов"""
         self.ui_text_left.position = (50, self.window.height / 2)
         self.ui_text_right.position = (
             self.window.width - 80, self.window.height / 2)
@@ -103,6 +109,7 @@ class LevelsView(arcade.View):
         for label in self.texts:
             if -500 < label.x < self.window.width + 500:
                 label.draw()
+
         is_moving = abs(self.target_offset - self.current_offset) > 1.0
 
         if not is_moving:

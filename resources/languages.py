@@ -9,5 +9,6 @@ LANGUAGES = {
     'press_for_cont': ['Нажмите для продолжения', 'Click to continue', 'Klikoni për të vazhduar'],
     'Esc_to_return': ['Нажмите ECS для возвращения', 'Press ESC to return', 'shtypni ESC për t\'u kthyer'],
     # 'Alexey Jid': ['Лёха Жидковский', 'Lech Zhidkovsky', 'Lech Zhidkovsky'],
-    'Glossary': ['Глоссарий', 'Glossary', 'Fjalori']
+    'Glossary': ['Глоссарий', 'Glossary', 'Fjalori'],
+    'episodes': ['Эпизод', 'Episode', 'Episodi']
 }
