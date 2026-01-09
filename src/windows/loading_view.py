@@ -13,6 +13,7 @@ class LoadingView(arcade.View):
         self.next_view_name = next_view_name
         self.load_tag = load_tag
 
+    def setup(self):
         self.texture_queue = queue.Queue()
         self.progress_queue = queue.Queue()
         self.total_files = 0
@@ -136,9 +137,24 @@ class LoadingView(arcade.View):
         self.file_text.draw()
 
     def on_show_view(self):
+        self.setup()
         self.window.background_color = arcade.color.BLACK
+
+        self.loaded_count = 0
+        self.is_finished = False
+        self.current_file_name = "Scanning..."
+
+        self.texture_queue = queue.Queue()
+        self.progress_queue = queue.Queue()
+
+        self.percent_text.text = "0%"
+        self.file_text.text = "Scanning..."
+
         self.files_to_load = reg.scan_resources(self.load_tag)
         self.total_files = len(self.files_to_load)
+
+        self.refresh_bar_fill()
+
         print(
             f"\n🚀 [Registry] Загрузка: '{self.load_tag}' | Файлов: {self.total_files}")
         self.start_time = time.time()
@@ -146,6 +162,7 @@ class LoadingView(arcade.View):
         if self.total_files == 0:
             self.go_next()
             return
+
         threading.Thread(target=self.background_worker, daemon=True).start()
 
     def background_worker(self):

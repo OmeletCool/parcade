@@ -132,15 +132,8 @@ class LevelsView(arcade.View):
             for btn in self.episode_buttons:
                 if btn.collides_with_point((x, y)):
                     print(f"Выбран эпизод {btn.episode_index + 1}")
-                    from src.windows.loading_view import LoadingView
-
-                    loading_view = LoadingView(
-                        window=self.window,
-                        next_view_name='demo_game_view',
-                        load_tag=f'{btn.episode_index + 1}episode'
-                    )
-
-                    self.window.show_view(loading_view)
+                    self.window.switch_view(
+                        ['loading_view', 'demo_game_view', f'{btn.episode_index + 1}episode'])
 
     def change_episode(self, index):
         self.current_episode = index

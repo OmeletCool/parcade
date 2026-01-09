@@ -65,6 +65,16 @@ class BaseWindow(arcade.Window):
         #     self.show_view(view)
         #     return
 
+        if type(view_name) == list and view_name[0] == 'loading_view':
+            from src.windows.loading_view import LoadingView
+            loading_view = LoadingView(
+                window=self,
+                next_view_name=view_name[1],
+                load_tag=view_name[2]
+            )
+            self.show_view(loading_view)
+            return
+
         view = self.get_view(view_name)
 
         self.show_view(view)
