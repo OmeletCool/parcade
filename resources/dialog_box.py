@@ -194,7 +194,7 @@ class DebugWindow(arcade.Window):
     def start_test(self):
         phrases = [
             DialoguePhrase("Эта фраза трясется {color:125,222,198}ВЕЧНО{/color}!",
-                           effect=TextEffect.SHAKE, voice=Voice.DEFAULT, speed=10),
+                           effect=TextEffect.SHAKE, voice=Voice.DEFAULT),
             DialoguePhrase("Я санс. и я говорю своим шрифтом.",
                            voice=Voice.GOVERMENT, font_name="montserrat"),
             DialoguePhrase("А Я ПАПАЙРУС! И Я ТОЖЕ ТРЯСУСЬ!",

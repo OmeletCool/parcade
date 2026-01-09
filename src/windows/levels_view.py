@@ -8,18 +8,15 @@ class LevelsView(arcade.View):
         self.window = window
         self.reg = reg
 
-        # Состояние карусели
         self.current_episode = 0
         self.target_offset = 0.0
         self.current_offset = 0.0
         self.scroll_speed = 0.15
 
-        # Спрайты и объекты
         self.background_sprite_list = arcade.SpriteList()
         self.episode_buttons = arcade.SpriteList()
         self.background_sprite = None
 
-        # Объекты текста
         self.texts = []
         self.ui_text_left = arcade.Text(
             "<", 0, 0, arcade.color.WHITE, font_size=50, anchor_y="center")
@@ -40,15 +37,25 @@ class LevelsView(arcade.View):
         self.background_sprite_list.append(self.background_sprite)
 
         for i in range(3):
-            btn = arcade.SpriteSolidColor(
-                int(self.window.width * 0.6),
-                int(self.window.height * 0.6),
-                (60, 60, 60, 255)
-            )
-            btn.episode_index = i
-            btn.center_x = float(self.window.width / 2 +
-                                 (i * self.window.width))
-            btn.center_y = float(self.window.height / 2)
+            if i == 0:
+                btn = arcade.Sprite(self.reg.get(
+                    'common/textures/backgrounds/st_episode.png'))
+                btn.width = int(self.window.width * 0.6)
+                btn.height = int(self.window.height * 0.6)
+                btn.episode_index = 0
+                btn.center_x = float(self.window.width / 2)
+                btn.center_y = float(self.window.height / 2)
+            else:
+                btn = arcade.SpriteSolidColor(
+                    int(self.window.width * 0.6),
+                    int(self.window.height * 0.6),
+                    (60, 60, 60, 255)
+                )
+                btn.episode_index = i
+                btn.center_x = float(self.window.width / 2 +
+                                     (i * self.window.width))
+                btn.center_y = float(self.window.height / 2)
+
             self.episode_buttons.append(btn)
 
             label = arcade.Text(
@@ -56,7 +63,8 @@ class LevelsView(arcade.View):
                 0, 0,
                 arcade.color.WHITE,
                 font_size=30,
-                anchor_x="center"
+                anchor_x="center",
+                font_name='Montserrat'
             )
             self.texts.append(label)
 
@@ -75,13 +83,11 @@ class LevelsView(arcade.View):
 
     def on_update(self, delta_time: float):
         diff = self.target_offset - self.current_offset
-        # Если разница совсем маленькая, приравниваем (чтобы убрать вечное мизерное движение)
         if abs(diff) < 0.1:
             self.current_offset = self.target_offset
         else:
             self.current_offset += diff * self.scroll_speed
 
-        # Обновляем динамические позиции
         for i, (btn, label) in enumerate(zip(self.episode_buttons, self.texts)):
             base_x = (self.window.width / 2) + (i * self.window.width)
             btn.center_x = base_x + self.current_offset
@@ -97,9 +103,6 @@ class LevelsView(arcade.View):
         for label in self.texts:
             if -500 < label.x < self.window.width + 500:
                 label.draw()
-
-        # ЛОГИКА СКРЫТИЯ СТРЕЛОК:
-        # Рисуем стрелки только если текущее смещение почти равно целевому
         is_moving = abs(self.target_offset - self.current_offset) > 1.0
 
         if not is_moving:
@@ -109,7 +112,6 @@ class LevelsView(arcade.View):
                 self.ui_text_right.draw()
 
     def on_mouse_press(self, x, y, button, modifiers):
-        # Если мы в движении, запрещаем клики по стрелкам (опционально)
         is_moving = abs(self.target_offset - self.current_offset) > 1.0
         if is_moving:
             return
