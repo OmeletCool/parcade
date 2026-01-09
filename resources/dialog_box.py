@@ -29,6 +29,7 @@ class DialoguePhrase:
     voice: Voice = Voice.DEFAULT
     font_name: Optional[str] = None
     callback: Optional[Callable] = None
+    skippable: bool = True
 
 
 class DialogBox:
@@ -43,29 +44,26 @@ class DialogBox:
         self.default_text_color = (255, 255, 255, 255)
         self.border_thickness = 4
 
+        # Звуки
         self.voices: Dict[Voice, Optional[arcade.Sound]] = {
-            Voice.DEFAULT: self._load_voice_safe("resources/sounds/voice_generic.wav"),
-            Voice.GOVERMENT:    self._load_voice_safe("resources/sounds/sans.wav"),
-            Voice.CIVILIAN: self._load_voice_safe("resources/sounds/papyrus.wav"),
-            Voice.FEAR:  self._load_voice_safe("resources/sounds/toriel.wav"),
+            Voice.DEFAULT: None,
+            Voice.GOVERMENT: arcade.load_sound('resources/common/sounds/sfx/voices/goverment_voice.wav'),
+            Voice.CIVILIAN: None,
+            Voice.FEAR: None,
         }
 
         self.phrases: List[DialoguePhrase] = []
         self.current_idx = -1
         self.visible_chars_count = 0
-        self.elapsed_time = 0.0
+        self.char_timer = 0.0
+        self.seconds_per_char = 0.0
         self.is_active = False
         self.waiting_for_input = False
         self.indicator_blink = 0.0
 
-        self.char_measurer = arcade.Text("", 0, 0)
+        # Список для оптимизированных объектов текста
+        self.text_objects: List[arcade.Text] = []
         self._setup_dimensions()
-
-    def _load_voice_safe(self, path: str):
-        try:
-            return arcade.load_sound(path)
-        except Exception:
-            return None
 
     def _setup_dimensions(self):
         scale = max(self.window.width / self.base_width,
@@ -104,72 +102,113 @@ class DialogBox:
         self.current_phrase = self.phrases[idx]
         self.parsed_data = self._parse_tags(self.current_phrase.text)
         self.visible_chars_count = 0
-        self.elapsed_time = 0.0
+        self.char_timer = 0.0
+        self.seconds_per_char = 1.0 / \
+            self.current_phrase.speed if self.current_phrase.speed > 0 else 0
         self.waiting_for_input = False
+
         current_font = self.current_phrase.font_name or self.default_font_name
-        self.char_measurer = arcade.Text(
-            "", 0, 0, font_name=current_font, font_size=self.font_size)
+
+        # ОПТИМИЗАЦИЯ: Создаем объекты заранее
+        self.text_objects = []
+        for char, color in self.parsed_data:
+            obj = arcade.Text(
+                char, 0, 0, color,
+                font_size=self.font_size,
+                font_name=current_font,
+                anchor_y="top"
+            )
+            self.text_objects.append(obj)
 
     def update(self, delta_time: float):
         if not self.is_active:
             return
+
         if self.waiting_for_input:
             self.indicator_blink += delta_time
             return
-        self.elapsed_time += delta_time
-        new_chars = int(self.elapsed_time * self.current_phrase.speed)
-        if new_chars > self.visible_chars_count:
-            if new_chars <= len(self.parsed_data):
+
+        self.char_timer += delta_time
+
+        while self.char_timer >= self.seconds_per_char and self.visible_chars_count < len(self.parsed_data):
+            self.char_timer -= self.seconds_per_char
+            self.visible_chars_count += 1
+
+            current_char = self.parsed_data[self.visible_chars_count - 1][0]
+
+            # УЛУЧШЕННЫЙ ЗВУК (через один символ + случайный питч)
+            if current_char not in [" ", "\n"]:
                 sound = self.voices.get(self.current_phrase.voice)
-                if sound:
-                    arcade.play_sound(sound, volume=0.3)
-                self.visible_chars_count = new_chars
-            else:
-                self.visible_chars_count = len(self.parsed_data)
-                self.waiting_for_input = True
-                if self.current_phrase.callback:
-                    self.current_phrase.callback()
+                should_play = (self.visible_chars_count %
+                               2 == 1) or (self.current_phrase.speed <= 15)
+
+                if sound and should_play:
+                    pitch = random.uniform(0.9, 1)
+                    arcade.play_sound(sound, volume=0.3, speed=pitch)
+
+        if self.visible_chars_count >= len(self.parsed_data):
+            self.waiting_for_input = True
+            if self.current_phrase.callback:
+                self.current_phrase.callback()
 
     def draw(self):
         if not self.is_active:
             return
+
+        # Фон и рамка
         arcade.draw_rect_filled(arcade.rect.XYWH(
             self.x, self.y, self.width, self.height), self.bg_color)
         arcade.draw_rect_outline(arcade.rect.XYWH(self.x, self.y, self.width, self.height),
                                  self.border_color, border_width=self.border_thickness)
+
         start_x = self.x - self.width/2 + self.padding
         start_y = self.y + self.height/2 - self.padding
         current_x, current_y = start_x, start_y
         time_ref = self.window.time
-        current_font = self.current_phrase.font_name or self.default_font_name
+
         for i in range(self.visible_chars_count):
-            char, char_color = self.parsed_data[i]
+            char = self.parsed_data[i][0]
+            text_obj = self.text_objects[i]
+
             if char == '\n':
                 current_x = start_x
                 current_y -= self.line_height
                 continue
-            self.char_measurer.text = char
-            cw = self.char_measurer.content_width
+
+            cw = text_obj.content_width
             if current_x + cw > self.x + self.width/2 - self.padding:
                 current_x = start_x
                 current_y -= self.line_height
+
             dx, dy = current_x, current_y
+
+            # Эффекты
             if self.current_phrase.effect == TextEffect.SHAKE:
-                dx += random.uniform(-4, 4)
-                dy += random.uniform(-4, 4)
+                dx += random.uniform(-math.sqrt(2), math.sqrt(2))
+                dy += random.uniform(-2, 2)
             elif self.current_phrase.effect == TextEffect.WAVE:
                 dy += math.sin(time_ref * 8 + i * 0.6) * 6
             elif self.current_phrase.effect == TextEffect.RAINBOW:
                 phase = time_ref * 5 + i * 0.5
-                char_color = (int(math.sin(phase)*127+128), int(math.sin(phase+2)
-                              * 127+128), int(math.sin(phase+4)*127+128), 255)
-            arcade.draw_text(char, dx, dy, char_color, font_size=self.font_size,
-                             font_name=current_font, anchor_y="top")
+                r = int(math.sin(phase) * 127 + 128)
+                g = int(math.sin(phase + 2) * 127 + 128)
+                b = int(math.sin(phase + 4) * 127 + 128)
+                text_obj.color = (r, g, b, 255)
+
+            text_obj.x = dx
+            text_obj.y = dy
+            text_obj.draw()
             current_x += cw
+
+        # --- ВОТ ОН, ТВОЙ ТРЕУГОЛЬНИК! ---
         if self.waiting_for_input and int(self.indicator_blink * 4) % 2 == 0:
             ix, iy = self.x + self.width/2 - 40, self.y - self.height/2 + 30
             arcade.draw_triangle_filled(
-                ix-10, iy+7, ix+10, iy, ix-10, iy-7, self.border_color)
+                ix-10, iy+7,
+                ix+10, iy,
+                ix-10, iy-7,
+                self.border_color
+            )
 
     def next_phrase(self):
         if not self.is_active:
@@ -181,8 +220,10 @@ class DialogBox:
             else:
                 self.is_active = False
         else:
-            self.visible_chars_count = len(self.parsed_data)
-            self.waiting_for_input = True
+            # ПРОВЕРКА НА ПРОПУСК
+            if self.current_phrase.skippable:
+                self.visible_chars_count = len(self.parsed_data)
+                self.waiting_for_input = True
 
 
 class DebugWindow(arcade.Window):
@@ -194,13 +235,13 @@ class DebugWindow(arcade.Window):
     def start_test(self):
         phrases = [
             DialoguePhrase("Эта фраза трясется {color:125,222,198}ВЕЧНО{/color}!",
-                           effect=TextEffect.SHAKE, voice=Voice.DEFAULT),
+                           effect=TextEffect.SHAKE, voice=Voice.GOVERMENT, speed=7, skippable=False),
             DialoguePhrase("Я санс. и я говорю своим шрифтом.",
-                           voice=Voice.GOVERMENT, font_name="montserrat"),
+                           voice=Voice.GOVERMENT, font_name="Montserrat"),
             DialoguePhrase("А Я ПАПАЙРУС! И Я ТОЖЕ ТРЯСУСЬ!",
-                           voice=Voice.FEAR, font_name="Impact", effect=TextEffect.SHAKE),
+                           voice=Voice.GOVERMENT, font_name="Impact", effect=TextEffect.SHAKE),
             DialoguePhrase("Радужная волна для завершения теста.",
-                           effect=TextEffect.RAINBOW, voice=Voice.CIVILIAN)
+                           effect=TextEffect.RAINBOW, voice=Voice.GOVERMENT)
         ]
         self.dialog_box.start_dialogue(phrases)
 
