@@ -41,15 +41,15 @@ class SettingsMenuView(arcade.View):
         self.creators_text = None
         self.glossary_text = None
         self.music_button = None
-        self.music_button_text = "ON" 
+        self.music_button_text = "ON"
 
         # Все текстовые объекты будем хранить в списке
         self.text_objects = []
-        
+
     def create_music_button(self):
         music_x = self.window.width // 3.7
         music_y = self.window.height * 0.39 - 60
-        
+
         style = {
             "normal": UIFlatButton.UIStyle(
                 font_name='montserrat',
@@ -70,7 +70,7 @@ class SettingsMenuView(arcade.View):
                 bg=(245, 245, 220, 255),
             )
         }
-        
+
         self.music_button = UIFlatButton(
             x=music_x,
             y=music_y,
@@ -79,11 +79,11 @@ class SettingsMenuView(arcade.View):
             text=self.music_button_text,
             style=style
         )
-        
+
         @self.music_button.event("on_click")
         def on_music_button_click(event):
             self.toggle_music()
-        
+
         return self.music_button
 
     def toggle_music(self):
@@ -93,7 +93,7 @@ class SettingsMenuView(arcade.View):
         else:
             self.window.enable_music()
             self.music_button_text = "ON"
-            
+
         if self.music_button:
             self.music_button.text = self.music_button_text
 
@@ -102,7 +102,7 @@ class SettingsMenuView(arcade.View):
         if hasattr(self.window, 'main_theme'):
             self.window.background_music.play()
             self.window.background_music.volume = 1.0
-        
+
         print("Музыка включена")
 
     def disable_music(self):
@@ -111,7 +111,6 @@ class SettingsMenuView(arcade.View):
             self.window.background_music.pause()
             self.window.background_music.volume = 0.0
 
-        
         print("Музыка выключена")
 
     def save_music_setting(self):
@@ -132,26 +131,28 @@ class SettingsMenuView(arcade.View):
     def create_creators_button(self):
         creators_x = self.window.width // 1.56
         creators_y = self.window.height * 0.27
-        
+
         self.creators_button = UITextureButton(
             x=creators_x - 75,
             y=creators_y,
             width=150,
             height=45,
             texture=arcade.Texture.create_empty("transparent", (150, 45)),
-            texture_hovered=arcade.Texture.create_empty("transparent_hover", (150, 45)),
-            texture_pressed=arcade.Texture.create_empty("transparent_pressed", (150, 45))
+            texture_hovered=arcade.Texture.create_empty(
+                "transparent_hover", (150, 45)),
+            texture_pressed=arcade.Texture.create_empty(
+                "transparent_pressed", (150, 45))
         )
-        
+
         @self.creators_button.event("on_click")
         def on_creators_click(event):
             self.on_creators_button_clicked()
-        
+
         return self.creators_button
 
     def on_creators_button_clicked(self):
         self.window.switch_view('creators_window')
-        
+
     def create_lang_button(self):
         center_x = self.window.width // 5.3
         center_y = self.window.height * 0.51
@@ -190,41 +191,43 @@ class SettingsMenuView(arcade.View):
                 )
             }
         )
-        
+
         @self.lang_button.event("on_click")
         def on_lang_button_click(event):
             self.language = (self.language + 1) % 3
-            
+
             self.lang_button.text = LANGUAGES['language'][self.language]
-            
+
             self.window.language = self.language
-            
+
             with open('data/language.txt', 'w') as lang:
                 lang.write(next((key for key, value in settings.lang_dict.items(
                 ) if value == self.language), 'russian'))
-            
+
             self.update_texts()
-        
+
         return self.lang_button
-    
+
     def create_glossary_button(self):
         glossary_x = self.window.width // 1.22
         glossary_y = self.window.height * 0.325
-        
+
         self.glossary_button = UITextureButton(
             x=glossary_x - 75,
             y=glossary_y,
             width=150,
             height=45,
             texture=arcade.Texture.create_empty("transparent", (150, 45)),
-            texture_hovered=arcade.Texture.create_empty("transparent_hover", (150, 45)),
-            texture_pressed=arcade.Texture.create_empty("transparent_pressed", (150, 45))
+            texture_hovered=arcade.Texture.create_empty(
+                "transparent_hover", (150, 45)),
+            texture_pressed=arcade.Texture.create_empty(
+                "transparent_pressed", (150, 45))
         )
-        
+
         @self.glossary_button.event("on_click")
         def on_glossary_click(event):
             self.on_glossary_button_clicked()
-        
+
         return self.glossary_button
 
     def on_glossary_button_clicked(self):
@@ -239,7 +242,7 @@ class SettingsMenuView(arcade.View):
             'creators': LANGUAGES['creators'][self.language],
             'glossary': LANGUAGES['Glossary'][self.language]
         }
-        
+
         # Обновляем каждый текстовый объект, если он существует
         if self.title_text:
             self.title_text.text = self.texts['title']
@@ -254,30 +257,29 @@ class SettingsMenuView(arcade.View):
         if self.glossary_text:
             self.glossary_text.text = self.texts['glossary']
 
-
     def create_lang_dropdown(self):
         self.ui_manager.clear()
-        
+
         lang_button = self.create_lang_button()
         self.ui_manager.add(lang_button)
-        
+
         creators_button = self.create_creators_button()
         self.ui_manager.add(creators_button)
-        
+
         music_button = self.create_music_button()
         self.ui_manager.add(music_button)
-        
+
         glossary_button = self.create_glossary_button()
-        self.ui_manager.add(glossary_button) 
+        self.ui_manager.add(glossary_button)
 
     def setup(self):
         self.load_background()
-        
+
         self.window.load_music_setting()
         self.music_button_text = "ON" if self.window.music_enabled else "OFF"
 
         self.text_objects.clear()
-        
+
         # Создаем UI элементы
         self.create_lang_dropdown()
 
@@ -317,7 +319,6 @@ class SettingsMenuView(arcade.View):
         )
         self.text_objects.append(self.change_language_text)
 
-
         self.music_text = arcade.Text(
             text=self.texts['music'],
             x=self.window.width // 3.353,
@@ -329,7 +330,7 @@ class SettingsMenuView(arcade.View):
             batch=self.batch
         )
         self.text_objects.append(self.music_text)
-        
+
         self.creators_text = arcade.Text(
             text=self.texts['creators'],
             x=self.window.width // 1.56,
@@ -341,7 +342,7 @@ class SettingsMenuView(arcade.View):
             batch=self.batch
         )
         self.text_objects.append(self.creators_text)
-        
+
         self.glossary_text = arcade.Text(
             text=self.texts['glossary'],
             x=self.window.width // 1.22,
@@ -352,9 +353,8 @@ class SettingsMenuView(arcade.View):
             anchor_x='center',
             batch=self.batch
         )
-        
+
         self.text_objects.append(self.glossary_text)
-        
 
     def on_show_view(self):
         self.setup()
@@ -371,7 +371,7 @@ class SettingsMenuView(arcade.View):
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         self.ui_manager.on_mouse_press(x, y, button, modifiers)
-        
+
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
         self.ui_manager.on_mouse_release(x, y, button, modifiers)
 
@@ -389,7 +389,7 @@ class SettingsMenuView(arcade.View):
     def load_background(self):
 
         texture = self.reg.get(
-            'textures/backgrounds/settings_background.jpg')
+            'common/textures/backgrounds/settings_background.jpg')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,
@@ -439,7 +439,295 @@ class SettingsMenuView(arcade.View):
         self.creators_text.text = self.texts['creators']
         self.creators_text.x = self.window.width // 1.56
         self.creators_text.y = self.window.height * 0.27
-    
+
         self.glossary_text.text = self.texts['glossary']
         self.glossary_text.x = self.window.width // 1.22
         self.glossary_text.y = self.window.height * 0.325
+
+# import arcade
+# import arcade.gui
+# from PIL import Image, ImageFilter  # Нужно для размытия
+# from resources.languages import LANGUAGES
+# from src.settings import settings
+# from src.registry import reg
+
+
+# class SettingsMenuView(arcade.View):
+#     def __init__(self, window: arcade.Window, previous_view: arcade.View):
+#         super().__init__()
+#         self.window = window
+#         self.previous_view = previous_view  # Запоминаем, откуда пришли
+#         self.reg = reg
+
+#         self.language: int = self.window.language
+
+#         # Менеджер UI
+#         self.ui_manager = arcade.gui.UIManager()
+#         self.ui_manager.enable()
+
+#         # Спрайт для размытого фона
+#         self.background_texture = self.create_blurred_background()
+
+#         # Для хранения текстовых объектов (меток)
+#         self.labels = []
+
+#         self.setup_ui()
+
+#     def create_blurred_background(self):
+#         """Делает скриншот текущего окна, размывает и затемняет его."""
+#         # 1. Получаем изображение текущего окна
+#         image = arcade.get_image()
+
+#         # 2. Размываем через Pillow (PIL)
+#         # Radius 5 - сила размытия, можно менять
+#         image = image.filter(ImageFilter.GaussianBlur(radius=5))
+
+#         # 3. Можно немного затемнить (опционально)
+#         # Но проще рисовать поверх полупрозрачный черный прямоугольник в on_draw
+
+#         # 4. Превращаем обратно в текстуру Arcade
+#         return arcade.Texture(image)
+
+#     def get_responsive_font_size(self, base_size=20):
+#         """Возвращает размер шрифта относительно высоты окна"""
+#         # Например, базовый размер рассчитан на высоту 720.
+#         # Если окно 1080, шрифт будет больше.
+#         scale_factor = self.window.height / 720
+#         return int(base_size * scale_factor)
+
+#     def get_transparent_style(self, font_size=16):
+#         """Стиль для полностью прозрачной кнопки (виден только текст)"""
+#         font_size = self.get_responsive_font_size(font_size)
+#         return {
+#             "normal": arcade.gui.UIFlatButton.UIStyle(
+#                 font_name='montserrat',
+#                 font_size=font_size,
+#                 font_color=arcade.color.BLACK,
+#                 bg=(0, 0, 0, 0),       # Прозрачный
+#                 border=(0, 0, 0, 0)    # Без границ
+#             ),
+#             "hover": arcade.gui.UIFlatButton.UIStyle(
+#                 font_name='montserrat',
+#                 font_size=font_size,
+#                 font_color=(100, 100, 100, 255),  # Серый при наведении
+#                 bg=(0, 0, 0, 0),
+#                 border=(0, 0, 0, 0)
+#             ),
+#             "press": arcade.gui.UIFlatButton.UIStyle(
+#                 font_name='montserrat',
+#                 font_size=font_size,
+#                 font_color=arcade.color.BLACK,
+#                 bg=(0, 0, 0, 0),
+#                 border=(0, 0, 0, 0)
+#             )
+#         }
+
+#     def setup_ui(self):
+#         self.ui_manager.clear()
+#         self.labels.clear()
+
+#         # Тексты (берем из словаря)
+#         t_lang = LANGUAGES['language'][self.language]
+#         t_music = "ON" if self.window.music_enabled else "OFF"
+#         # t_creators... и т.д. - для кнопок мы используем их как текст кнопки
+
+#         # --- 1. КНОПКА ЯЗЫКА ---
+#         lang_btn = arcade.gui.UIFlatButton(
+#             text=t_lang,
+#             width=200,
+#             height=50,
+#             style=self.get_transparent_style(20)
+#         )
+#         # Позиционирование через AnchorLayout или просто перемещение
+#         # В старом коде было абсолютное позиционирование. Повторим его, но адаптивно.
+#         lang_btn.center_x = self.window.width // 5.3 - 120
+#         lang_btn.center_y = self.window.height * 0.51 + 80
+
+#         @lang_btn.event("on_click")
+#         def on_lang_click(event):
+#             self.toggle_language()
+#             # Пересоздаем UI, чтобы обновить текст везде
+#             self.setup_ui()
+
+#         self.ui_manager.add(lang_btn)
+
+#         # --- 2. КНОПКА МУЗЫКИ ---
+#         music_btn = arcade.gui.UIFlatButton(
+#             text=t_music,
+#             width=100,
+#             height=50,
+#             style=self.get_transparent_style(20)
+#         )
+#         music_btn.center_x = self.window.width // 3.7
+#         music_btn.center_y = self.window.height * 0.39 - 60
+
+#         @music_btn.event("on_click")
+#         def on_music_click(event):
+#             self.toggle_music()
+#             # Обновляем текст только этой кнопки для оптимизации
+#             music_btn.text = "ON" if self.window.music_enabled else "OFF"
+
+#         self.ui_manager.add(music_btn)
+
+#         # --- 3. КНОПКА CREATORS (Прозрачная поверх текста или просто текст-кнопка) ---
+#         # Если ты хочешь, чтобы слово "Создатели" само было кнопкой:
+#         creators_btn = arcade.gui.UIFlatButton(
+#             text="",  # Текст нарисуем отдельно, если нужна сложная графика, или используем button text
+#             width=150,
+#             height=50,
+#             style=self.get_transparent_style(20)
+#         )
+#         # Тут я использую невидимую кнопку ПОВЕРХ места, где будет текст,
+#         # или можно просто сделать кнопку с текстом "Creators"
+#         creators_btn.center_x = self.window.width // 1.56 - 75
+#         creators_btn.center_y = self.window.height * 0.27
+
+#         @creators_btn.event("on_click")
+#         def on_creators_click(event):
+#             # Убедись что там тоже есть возврат
+#             self.window.switch_view('creators_window')
+
+#         self.ui_manager.add(creators_btn)
+
+#         # --- 4. КНОПКА GLOSSARY ---
+#         glossary_btn = arcade.gui.UIFlatButton(
+#             text="",
+#             width=150,
+#             height=50,
+#             style=self.get_transparent_style(20)
+#         )
+#         glossary_btn.center_x = self.window.width // 1.22 - 75
+#         glossary_btn.center_y = self.window.height * 0.325
+
+#         @glossary_btn.event("on_click")
+#         def on_glossary_click(event):
+#             self.window.switch_view('glossary_window')
+
+#         self.ui_manager.add(glossary_btn)
+
+#         # --- ДОБАВЛЕНИЕ ПОДПИСЕЙ (LABELS) ---
+#         # Рисуем статический текст, который не является кнопками, или заголовки кнопок
+
+#         # Заголовок
+#         self.add_label(LANGUAGES['settings_button'][self.language],
+#                        self.window.width // 2,
+#                        self.window.height * 0.818,
+#                        font_size=30, bold=True)
+
+#         # Подпись "Нажми ESC"
+#         self.add_label(LANGUAGES['Esc_to_return'][self.language],
+#                        self.window.width // 2,
+#                        self.window.height * 0.05,
+#                        font_size=18, color=arcade.color.WHITE)
+
+#         # Подпись "Сменить язык"
+#         self.add_label(LANGUAGES['change_language'][self.language],
+#                        self.window.width // 6.45,
+#                        self.window.height * 0.69,
+#                        font_size=20)
+
+#         # Подпись "Музыка"
+#         self.add_label(LANGUAGES['music'][self.language],
+#                        self.window.width // 3.353,
+#                        self.window.height * 0.39,
+#                        font_size=20)
+
+#         # Подписи для Creators и Glossary (так как кнопки выше были пустыми/прозрачными)
+#         # Если кнопки выше были с текстом, это не нужно.
+#         # Но если ты хочешь текст отдельно, а кликабельную область отдельно:
+#         self.add_label(LANGUAGES['creators'][self.language],
+#                        self.window.width // 1.56,
+#                        self.window.height * 0.27,
+#                        font_size=24)
+
+#         self.add_label(LANGUAGES['Glossary'][self.language],
+#                        self.window.width // 1.22,
+#                        self.window.height * 0.325,
+#                        font_size=18)
+
+#     def add_label(self, text, x, y, font_size=20, color=arcade.color.BLACK, bold=False):
+#         """Вспомогательная функция для добавления текста"""
+#         size = self.get_responsive_font_size(font_size)
+#         lbl = arcade.Text(
+#             text=text,
+#             x=x, y=y,
+#             color=color,
+#             font_size=size,
+#             font_name='montserrat',
+#             anchor_x='center',
+#             anchor_y='center',
+#             bold=bold
+#         )
+#         self.labels.append(lbl)
+
+#     def toggle_language(self):
+#         self.language = (self.language + 1) % 3
+#         self.window.language = self.language
+
+#         # Сохранение (как у тебя было)
+#         lang_key = next((key for key, value in settings.lang_dict.items(
+#         ) if value == self.language), 'russian')
+#         with open('data/language.txt', 'w') as f:
+#             f.write(lang_key)
+
+#     def toggle_music(self):
+#         if self.window.music_enabled:
+#             self.window.disable_music()
+#         else:
+#             self.window.enable_music()
+#         self.window.save_music_setting()
+
+#     def on_draw(self):
+#         self.clear()
+
+#         # 1. Рисуем размытый фон
+#         arcade.draw_texture_rect(
+#             self.background_texture,
+#             arcade.rect.XYWH(
+#                 self.window.width / 2,
+#                 self.window.height / 2,
+#                 self.window.width,
+#                 self.window.height
+#             )
+#         )
+
+#         # 2. Рисуем полупрозрачную подложку для красоты (диммер)
+#         arcade.draw_rect_filled(
+#             arcade.rect.XYWH(
+#                 self.window.width / 2,
+#                 self.window.height / 2,
+#                 self.window.width,
+#                 self.window.height
+#             ),
+#             (0, 0, 0, 100)  # Черный с прозрачностью ~40%
+#         )
+
+#         # 3. Рисуем UI
+#         # Сначала просто текст
+#         for label in self.labels:
+#             label.draw()
+
+#         # Потом кнопки
+#         self.ui_manager.draw()
+
+#     def on_resize(self, width, height):
+#         super().on_resize(width, height)
+#         # При изменении размера пересоздаем UI (пересчитываются шрифты и координаты)
+#         self.background_texture = self.create_blurred_background()  # Фон тоже лучше обновить
+#         self.setup_ui()
+
+#     def on_key_press(self, symbol, modifiers):
+#         if symbol == arcade.key.ESCAPE:
+#             self.close_settings()
+
+#     def close_settings(self):
+#         # Возвращаемся на предыдущий экран
+#         self.window.show_view(self.previous_view)
+
+#     def on_show_view(self):
+#         # UI Manager включается
+#         self.ui_manager.enable()
+
+#     def on_hide_view(self):
+#         # UI Manager выключается
+#         self.ui_manager.disable()

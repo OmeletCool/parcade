@@ -29,7 +29,7 @@ class StartView(arcade.View):
         self.overlay_sprite_list = arcade.SpriteList()
 
         self.wind_sound: arcade.Sound = self.reg.get(
-            'sounds/sfx/ambient/wind.wav')
+            'common/sounds/sfx/ambient/wind.wav')
 
         self.fade_background_duration = self.wind_sound.get_length()
 
@@ -113,7 +113,8 @@ class StartView(arcade.View):
         self.window.switch_view('main_menu')
 
     def load_background(self):
-        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
+        texture = self.reg.get(
+            'common/textures/backgrounds/main_menu_background.png')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,

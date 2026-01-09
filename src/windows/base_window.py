@@ -18,7 +18,7 @@ class BaseWindow(arcade.Window):
         self.reg = reg
 
         self.set_icon(pyglet.image.load(
-            "resources/textures/ui/icons/icon.jpg"))
+            "resources/common/textures/ui/icons/icon.jpg"))
 
         self.background_music = None
         self.music_players = {}
@@ -36,25 +36,32 @@ class BaseWindow(arcade.Window):
             if view_name == "main_menu":
                 from src.windows.main_menu_view import MainMenuView
                 self.views[view_name] = MainMenuView(self)
-            elif view_name == 'settings_window':
-                from src.windows.settings_window import SettingsMenuView
-                self.views[view_name] = SettingsMenuView(self)
             elif view_name == 'levels_window':
-                from src.windows.levels_window import LevelsView
+                from src.windows.levels_view import LevelsView
                 self.views[view_name] = LevelsView(self)
             elif view_name == 'start_window':
-                from src.windows.start_window import StartView
+                from src.windows.start_view import StartView
                 self.views[view_name] = StartView(self)
             elif view_name == 'creators_window':
-                from src.windows.creators_window import CreatorsView
+                from src.windows.creators_view import CreatorsView
                 self.views[view_name] = CreatorsView(self)
             elif view_name == 'glossary_window':
-                from src.windows.glossary_window import GlossaryView
+                from src.windows.glossary_view import GlossaryView
                 self.views[view_name] = GlossaryView(self)
+            elif view_name == 'settings_window':
+                from src.windows.settings_view import SettingsMenuView
+                self.views[view_name] = SettingsMenuView(self)
 
         return self.views[view_name]
 
     def switch_view(self, view_name):
+        # if view_name == 'settings_window':
+        #     from src.windows.settings_view import SettingsMenuView
+        #     current_view = self.current_view
+        #     view = SettingsMenuView(self, current_view)
+        #     self.show_view(view)
+        #     return
+
         view = self.get_view(view_name)
 
         self.show_view(view)

@@ -2,7 +2,7 @@ import arcade
 from src.registry import reg
 
 
-class GlossaryView(arcade.View):
+class CreatorsView(arcade.View):
 
     def __init__(self, window: arcade.Window):
         super().__init__()
@@ -34,7 +34,8 @@ class GlossaryView(arcade.View):
         self.update_background_position_and_size()
 
     def load_background(self):
-        texture = self.reg.get('textures/backgrounds/glossary_window.jpg')
+        texture = self.reg.get(
+            'common/textures/backgrounds/creators_background.jpg')
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
             center_x=self.window.width // 2,

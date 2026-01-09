@@ -31,9 +31,9 @@ class MainMenuView(arcade.View):
         self.background_sprite = None
 
         self.button_textures = {
-            'normal': self.reg.get('textures/ui/buttons/normal/main_menu_button.png'),
-            'hovered': self.reg.get('textures/ui/buttons/hovered/main_menu_button.png'),
-            'pressed': self.reg.get('textures/ui/buttons/pressed/main_menu_button.png')
+            'normal': self.reg.get('common/textures/ui/buttons/normal/main_menu_button.png'),
+            'hovered': self.reg.get('common/textures/ui/buttons/hovered/main_menu_button.png'),
+            'pressed': self.reg.get('common/textures/ui/buttons/pressed/main_menu_button.png')
         }
 
         self.button_width = self.button_textures['normal'].width * 2.7
@@ -45,28 +45,32 @@ class MainMenuView(arcade.View):
         self.ui_buttons = []
         self.hovered_sound = True
 
-        self.window.forced_music['sounds/music/main_theme.ogg'] = {
-            'path': 'sounds/music/main_theme.ogg',
+        self.window.forced_music['common/sounds/music/main_theme.ogg'] = {
+            'path': 'common/sounds/music/main_theme.ogg',
             'volume': 1.0,
             'isLooping': True
         }
 
         self.window.play_definite_music(
-            self.window.forced_music['sounds/music/main_theme.ogg']['path'],
-            self.window.forced_music['sounds/music/main_theme.ogg']['volume'],
-            self.window.forced_music['sounds/music/main_theme.ogg']['isLooping']
+            self.window.forced_music['common/sounds/music/main_theme.ogg']['path'],
+            self.window.forced_music['common/sounds/music/main_theme.ogg']['volume'],
+            self.window.forced_music['common/sounds/music/main_theme.ogg']['isLooping']
         )
 
     def setup(self):
         """Инициализация представления"""
-        self.language = self.window.language
-        self.load_background()
         self.ui_manager.enable()
+        self.language = self.window.language
+        self.background_sprite_list.clear()
+        self.load_background()
         self.create_buttons()
 
     def on_show_view(self):
         """Вызывается при показе этого представления"""
         self.setup()
+
+        self.ui_manager.trigger_render()
+
         self.timer = 0.0
 
     def on_hide_view(self):
@@ -78,6 +82,8 @@ class MainMenuView(arcade.View):
 
         self.background_sprite_list.draw()
 
+        self.ui_manager.on_resize(self.window.width, self.window.height)
+
         self.ui_manager.draw()
 
     def on_update(self, delta_time):
@@ -86,7 +92,7 @@ class MainMenuView(arcade.View):
         if any([button.hovered for button in self.ui_buttons]):
             if not self.hovered_sound:
                 self.window.play_definite_music(
-                    'sounds/sfx/ui/on_button_hover.wav')
+                    'common/sounds/sfx/ui/on_button_hover.wav')
                 self.hovered_sound = True
         elif not all([button.hovered for button in self.ui_buttons]):
             self.hovered_sound = False
@@ -98,7 +104,8 @@ class MainMenuView(arcade.View):
         self.create_buttons()
 
     def load_background(self):
-        texture = self.reg.get('textures/backgrounds/main_menu_background.png')
+        texture = self.reg.get(
+            'common/textures/backgrounds/main_menu_background.png')
 
         self.background_sprite = arcade.Sprite(
             path_or_texture=texture,
@@ -114,8 +121,11 @@ class MainMenuView(arcade.View):
         self.ui_manager.clear()
         self.ui_buttons.clear()
 
-        scale_x = self.window.width / self.original_width
-        scale_y = self.window.height / self.original_height
+        win_w = self.window.width
+        win_h = self.window.height
+
+        scale_x = win_w / self.original_width
+        scale_y = win_h / self.original_height
 
         scale = min(scale_x, scale_y)
 
@@ -185,12 +195,14 @@ class MainMenuView(arcade.View):
         box.add(settings_button)
 
         anchor = UIAnchorLayout(
-            width=self.window.width,
-            height=self.window.height
+            width=win_w,
+            height=win_h
         )
         anchor.add(box, anchor_x='center', anchor_y='center')
 
         self.ui_manager.add(anchor)
+
+        anchor.do_layout()
 
         self.ui_buttons.append(play_button)
         self.ui_buttons.append(settings_button)
