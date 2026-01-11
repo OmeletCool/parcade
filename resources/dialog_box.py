@@ -24,12 +24,13 @@ class Voice(Enum):
 @dataclass
 class DialoguePhrase:
     text: str
-    speed: float = 30.0
+    speed: float = 20.0
     effect: TextEffect = TextEffect.NORMAL
     voice: Voice = Voice.DEFAULT
     font_name: Optional[str] = None
     callback: Optional[Callable] = None
     skippable: bool = True
+    pitch: float = 1
 
 
 class DialogBox:
@@ -100,6 +101,7 @@ class DialogBox:
 
     def _load_phrase(self, idx: int):
         self.current_phrase = self.phrases[idx]
+        self.current_phrase.pitch = max(0.4, min(2, self.current_phrase.pitch))
         self.parsed_data = self._parse_tags(self.current_phrase.text)
         self.visible_chars_count = 0
         self.char_timer = 0.0
@@ -136,14 +138,14 @@ class DialogBox:
 
             current_char = self.parsed_data[self.visible_chars_count - 1][0]
 
-            # УЛУЧШЕННЫЙ ЗВУК (через один символ + случайный питч)
             if current_char not in [" ", "\n"]:
                 sound = self.voices.get(self.current_phrase.voice)
                 should_play = (self.visible_chars_count %
                                2 == 1) or (self.current_phrase.speed <= 15)
 
                 if sound and should_play:
-                    pitch = random.uniform(0.9, 1)
+                    pitch = random.uniform(
+                        0.9 * self.current_phrase.pitch, 1 * self.current_phrase.pitch)
                     arcade.play_sound(sound, volume=0.3, speed=pitch)
 
         if self.visible_chars_count >= len(self.parsed_data):
@@ -182,7 +184,6 @@ class DialogBox:
 
             dx, dy = current_x, current_y
 
-            # Эффекты
             if self.current_phrase.effect == TextEffect.SHAKE:
                 dx += random.uniform(-math.sqrt(2), math.sqrt(2))
                 dy += random.uniform(-2, 2)
@@ -200,7 +201,6 @@ class DialogBox:
             text_obj.draw()
             current_x += cw
 
-        # --- ВОТ ОН, ТВОЙ ТРЕУГОЛЬНИК! ---
         if self.waiting_for_input and int(self.indicator_blink * 4) % 2 == 0:
             ix, iy = self.x + self.width/2 - 40, self.y - self.height/2 + 30
             arcade.draw_triangle_filled(

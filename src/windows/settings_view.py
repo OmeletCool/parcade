@@ -4,6 +4,7 @@ from src.settings import settings
 from src.registry import reg
 from resources.languages import LANGUAGES
 
+
 class SettingsMenuView(arcade.View):
     def __init__(self, window: arcade.Window):
         super().__init__()
@@ -34,7 +35,7 @@ class SettingsMenuView(arcade.View):
         m_scale = min(sw, sh)
 
         font_name = 'Montserrat'
-        
+
         invisible_style = {
             "normal": UIFlatButton.UIStyle(font_name=font_name, font_color=arcade.color.BLACK, bg=(0, 0, 0, 0), font_size=16),
             "hover": UIFlatButton.UIStyle(font_name=font_name, font_color=arcade.color.BLACK, bg=(0, 0, 0, 0), font_size=17),
@@ -71,10 +72,18 @@ class SettingsMenuView(arcade.View):
             text=LANGUAGES['language'][self.language],
             style=invisible_style
         )
+
         @lang_btn.event("on_click")
         def on_lang_click(event):
             self.language = (self.language + 1) % 3
             self.window.language = self.language
+            lang_dict = {
+                0: 'english',
+                1: 'russian',
+                2: 'albanian'
+            }
+            with open('data/language.txt', 'w') as lang:
+                lang.write(lang_dict[self.language])
             self.create_ui()
 
         self.ui_manager.add(lang_header)
@@ -97,6 +106,7 @@ class SettingsMenuView(arcade.View):
             text=self.music_button_text,
             style=invisible_style
         )
+
         @music_btn.event("on_click")
         def on_music_click(event):
             self.toggle_music()
@@ -112,7 +122,8 @@ class SettingsMenuView(arcade.View):
             text=LANGUAGES['creators'][self.language],
             style=invisible_style
         )
-        creators_btn.on_click = lambda _: self.window.switch_view('creators_window')
+        creators_btn.on_click = lambda _: self.window.switch_view(
+            'creators_window')
         self.ui_manager.add(creators_btn)
 
         # --- 5. ГЛОССАРИЙ (Коричневый блок снизу справа) ---
@@ -122,7 +133,8 @@ class SettingsMenuView(arcade.View):
             text=LANGUAGES['Glossary'][self.language],
             style=invisible_style
         )
-        glossary_btn.on_click = lambda _: self.window.switch_view('glossary_window')
+        glossary_btn.on_click = lambda _: self.window.switch_view(
+            'glossary_window')
         self.ui_manager.add(glossary_btn)
 
         # Подсказка ESC
@@ -165,7 +177,8 @@ class SettingsMenuView(arcade.View):
         self.create_ui()
 
     def load_background(self):
-        texture = self.reg.get('common/textures/backgrounds/settings_background.jpg')
+        texture = self.reg.get(
+            'common/textures/backgrounds/settings_background.jpg')
         self.background_sprite = arcade.Sprite(path_or_texture=texture)
         self.background_sprite_list.clear()
         self.background_sprite_list.append(self.background_sprite)

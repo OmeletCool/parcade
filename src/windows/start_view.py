@@ -45,7 +45,7 @@ class StartView(arcade.View):
             y=self.window.height * 0.15,
             color=(255, 255, 255, 0),
             font_size=28,
-            font_name='montserrat',
+            font_name='Montserrat',
             batch=self.batch,
             anchor_x='center'
         )
