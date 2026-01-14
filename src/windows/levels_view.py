@@ -132,9 +132,10 @@ class LevelsView(arcade.View):
             for btn in self.episode_buttons:
                 if btn.collides_with_point((x, y)):
                     print(f"Выбран эпизод {btn.episode_index + 1}")
-                    self.window.stop_definite_music(
-                        'common/sounds/music/main_theme.ogg')
-                    self.window.forced_music.clear()
+                    if 'common/sounds/music/main_theme.ogg' in self.window.music_players.keys():
+                        self.window.stop_definite_music(
+                            'common/sounds/music/main_theme.ogg')
+                    self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
                     self.window.switch_view(
                         ['loading_view', 'demo_game_view', f'{btn.episode_index + 1}episode'])
 

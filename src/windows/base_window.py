@@ -106,8 +106,9 @@ class BaseWindow(arcade.Window):
             self.music_enabled = True
             if self.forced_music:
                 for music in self.forced_music.values():
-                    self.music_players[music['path']] = arcade.play_sound(
-                        self.reg.get(music['path']), music['volume'], loop=music['isLooping'])
+                    if music[1]:
+                        self.music_players[music[0]['path']] = arcade.play_sound(
+                            self.reg.get(music[0]['path']), music[0]['volume'], loop=music[0]['isLooping'])
 
     def load_music_setting(self):
         with open('data/music.txt', 'r') as music_file:

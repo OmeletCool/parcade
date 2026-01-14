@@ -45,16 +45,16 @@ class MainMenuView(arcade.View):
         self.ui_buttons = []
         self.hovered_sound = True
 
-        self.window.forced_music['common/sounds/music/main_theme.ogg'] = {
+        self.window.forced_music['common/sounds/music/main_theme.ogg'] = [{
             'path': 'common/sounds/music/main_theme.ogg',
             'volume': 1.0,
             'isLooping': True
-        }
+        }, True]
 
         self.window.play_definite_music(
-            self.window.forced_music['common/sounds/music/main_theme.ogg']['path'],
-            self.window.forced_music['common/sounds/music/main_theme.ogg']['volume'],
-            self.window.forced_music['common/sounds/music/main_theme.ogg']['isLooping']
+            path='common/sounds/music/main_theme.ogg',
+            volume=1.0,
+            isLooping=True
         )
 
     def setup(self):
