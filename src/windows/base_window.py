@@ -54,6 +54,12 @@ class BaseWindow(arcade.Window):
             elif view_name == 'demo_game_view':
                 from src.windows.game_view import DemoGameView
                 self.views[view_name] = DemoGameView(self)
+            elif view_name == 'game_start_view':
+                from src.windows.game_window.start_game import StartGame
+                self.views[view_name] = StartGame(self)
+            elif view_name == 'game_house_view':
+                from src.windows.game_window.house_view import HouseView
+                self.views[view_name] = HouseView(self)
 
         return self.views[view_name]
 

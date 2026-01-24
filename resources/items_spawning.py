@@ -9,7 +9,6 @@ from typing import List, Optional, Dict
 DB_PATH = "resources/items.csv"
 BG_PATH = "resources/1episode/textures/backgrounds/first_episode_bg.png"
 
-# Относительные координаты для спавна
 SPAWN_RATIOS = [
     (0.25, 0.30, "ground"),
     (0.50, 0.45, "tree"),
@@ -30,7 +29,6 @@ class ItemConfig:
 
 class ActiveItem(arcade.Sprite):
     def __init__(self, config: ItemConfig, x_ratio: float, y_ratio: float, window_w: int, window_h: int):
-        # Загружаем текстуру один раз
         tex = arcade.load_texture(config.path)
         super().__init__(tex)
         self.config = config
