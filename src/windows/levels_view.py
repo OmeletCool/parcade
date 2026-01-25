@@ -137,7 +137,7 @@ class LevelsView(arcade.View):
                             'common/sounds/music/main_theme.ogg')
                     self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
                     self.window.switch_view(
-                        ['loading_view', 'game_start_view', f'{btn.episode_index + 1}episode'])
+                        ['loading_view', 'game_house_view', f'{btn.episode_index + 1}episode'])
 
     def change_episode(self, index):
         self.current_episode = index

@@ -92,11 +92,15 @@ class BaseWindow(arcade.Window):
     def play_definite_music(self, path: str, volume=1.0, isLooping=False):
         if self.music_enabled:
             self.music_players[path] = arcade.play_sound(
-                self.reg.get(path), volume, isLooping)
+                self.reg.get(path), volume, loop=isLooping)
 
     def stop_definite_music(self, path: str):
-        if self.music_players[path]:
-            arcade.stop_sound(self.music_players[path])
+        player = self.music_players.get(path)
+        if player:
+            try:
+                arcade.stop_sound(player)
+            except Exception:
+                pass
             self.music_players.pop(path)
 
     def disable_music(self):

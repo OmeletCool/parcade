@@ -28,6 +28,7 @@ class HouseView(arcade.View):
         self.dialog_box = DialogBox(
             self.window, default_font_name="Montserrat")
         self.isRinging = False
+        self.isStartedToRing = False
         self.dialog_finished = False
         self.time_elapsed = 0.0
         self.ring_delay = 5.0
@@ -120,11 +121,36 @@ class HouseView(arcade.View):
         self.dialog_box._setup_dimensions()
 
     def on_update(self, delta_time):
+        self.time_elapsed += delta_time
+
         self.update_phone_logic(delta_time)
         self.dialog_box.update(delta_time)
 
         if not self.dialog_box.is_active:
-            if self.sequence_step == 1:
+            if self.sequence_step == 0:
+                self.sequence_timer += delta_time
+                if self.sequence_timer >= 1.0:
+                    self.isRinging = True
+                    self.start_dialog(0)
+                    self.sequence_timer = 0
+                    self.sequence_step = -1
+
+            elif self.sequence_step == 0.2:
+                self.sequence_timer += delta_time
+                if self.sequence_timer >= 0.2:
+                    self.sequence_timer = 0
+                    self.sequence_step = -1
+                    self.dialog_finished = True
+                    self.start_dialog(1)
+
+            elif self.sequence_step == 1.5:
+                self.sequence_timer += delta_time
+                if self.sequence_timer >= 0.5:
+                    self.sequence_timer = 0
+                    self.sequence_step = -1
+                    self.start_dialog(1.5)
+
+            elif self.sequence_step == 1:
                 self.sequence_timer += delta_time
                 if self.sequence_timer >= 1.0:
                     self.sequence_timer = 0
@@ -132,35 +158,51 @@ class HouseView(arcade.View):
                     self.start_dialog(2)
 
             elif self.sequence_step == 2:
-                # Проигрываем звук стука (замени путь на свой из реестра)
-                # arcade.play_sound(self.reg.get('common/sounds/sfx/world/door_knock.wav'))
-                self.sequence_step = 0
-                self.start_dialog(3)
+                self.window.play_definite_music(
+                    'common/sounds/sfx/ambient/door_knocking.wav')
+                self.start_dialog(2.5)
+                self.sequence_step = -1
+
+            elif self.sequence_step == 3:
+                self.sequence_timer += delta_time
+                if self.sequence_timer >= 0.2:
+                    self.sequence_timer = 0
+                    self.sequence_step = -1
+                    self.start_dialog(3)
 
         if self.dialog_finished and not self.dialog_box.is_active:
-            self.can_interact = True
+            if self.can_open_door:
+                self.can_interact = True
 
     def update_phone_logic(self, delta_time):
-        if not self.dialog_finished:
-            self.time_elapsed += delta_time
-            if self.time_elapsed > self.ring_delay and not self.isRinging and not self.dialog_box.is_active:
+        if self.sequence_step == 0.2:
+            return
+
+        if not self.dialog_finished and not self.isRinging and not self.dialog_box.is_active:
+            if self.time_elapsed > self.ring_delay:
                 self.isRinging = True
 
         if self.isRinging:
+            if not self.isStartedToRing:
+                self.window.play_definite_music(
+                    '1episode/sounds/sfx/ambient/bringing_phone.wav', isLooping=True)
+                self.isStartedToRing = True
+
             h = self.window.height
             offset = h * 0.105
             shake = math.sin(self.time_elapsed * 60) * (h * 0.003)
             self.phone_tube_sprite.angle = math.sin(self.time_elapsed * 40) * 5
             self.phone_tube_sprite.center_y = self.phone_base_sprite.center_y + offset + shake
 
-    def _on_phone_end(self):
-        self.sequence_step = 1
-
-    def _on_t2_end(self):
-        self.sequence_step = 2
+    def _on_phone_end(self): self.sequence_step = 1.5
+    def _on_hanging_up_end(self): self.sequence_step = 1
+    def _on_monologue1_end(self): self.sequence_step = 2
+    def _on_knocking_end(self): self.sequence_step = 3
 
     def _on_t3_end(self):
         self.can_open_door = True
+        self.dialog_finished = True
+        self.dialog_finished = True
 
     def on_draw(self):
         self.clear()
@@ -174,13 +216,22 @@ class HouseView(arcade.View):
                 (x, y)) else s.normal_text
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if (self.phone_base_sprite.collides_with_point((x, y)) or self.phone_tube_sprite.collides_with_point((x, y))) and not self.dialog_box.is_active:
+        if (self.phone_base_sprite.collides_with_point((x, y)) or self.phone_tube_sprite.collides_with_point((x, y))) and not self.dialog_box.is_active and self.sequence_step != 0.2:
             if self.isRinging:
                 self.isRinging = False
-                self.dialog_finished = True
+                self.isStartedToRing = False
+
+                self.window.stop_definite_music(
+                    '1episode/sounds/sfx/ambient/bringing_phone.wav')
+
                 self.phone_tube_sprite.angle = 0
                 self.update_layout()
-                self.start_dialog(1)
+
+                self.window.play_definite_music(
+                    '1episode/sounds/sfx/ambient/picking_up_the_phone.wav')
+
+                self.sequence_step = 0.2
+                self.sequence_timer = 0.0
                 return
         if self.can_interact:
             if self.bed_sprite.collides_with_point((x, y)):
@@ -193,21 +244,25 @@ class HouseView(arcade.View):
                 else:
                     pass
 
-    def start_dialog(self, t: int):
+    def start_dialog(self, t):
+        if t == 0:
+            self.dialog_box.start_dialogue([
+                DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['calling'][self.language],
+                               voice=Voice.DEFAULT, speed=30)])
         if t == 1:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['1'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['2'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['3'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['4'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['5'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['6'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['7'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['8'][self.language],
@@ -217,15 +272,15 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['10'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['11'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['12'][self.language],
-                               voice=Voice.GOVERMENT, logo=Icon.PHONE),
+                               voice=Voice.GOVERMENT, logo=Icon.PHONE, skippable=False, speed=10),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['13'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['14'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['15'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['16'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['17'][self.language],
@@ -233,30 +288,40 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['18'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['19'][self.language],
-                               voice=Voice.GOVERMENT, logo=Icon.PHONE),
+                               voice=Voice.GOVERMENT, logo=Icon.PHONE, skippable=False),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['20'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT, callback=self._on_phone_end)
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_phone_end)
+            ])
+        if t == 1.5:
+            self.dialog_box.start_dialogue([
+                DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['hanging_up'][self.language],
+                               speed=30, voice=Voice.DEFAULT, callback=self._on_hanging_up_end)
             ])
         if t == 2:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['monologues']['1'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.ANGRY),
                 DialoguePhrase(LANGUAGES['monologues']['2'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT, callback=self._on_t2_end),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_monologue1_end),
+            ])
+        if t == 2.5:
+            self.dialog_box.start_dialogue([
+                DialoguePhrase(LANGUAGES['dialogues']['ui_sound_desc']['knocking'][self.language],
+                               voice=Voice.DEFAULT, speed=30, callback=self._on_knocking_end)
             ])
         if t == 3:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['monologues']['3'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(LANGUAGES['monologues']['4'][self.language],
-                               voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT, callback=self._on_t3_end),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_t3_end),
             ])
         if t == 4:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['dialogues']['postman_talkings']['1']
                                [self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['postman_talkings']['2']
-                               [self.language], voice=Voice.DEFAULT, logo=Icon.PLAYER.DEFAULT),
+                               [self.language], voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
                 DialoguePhrase(
                     LANGUAGES['dialogues']['postman_talkings']['3'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
                 DialoguePhrase(

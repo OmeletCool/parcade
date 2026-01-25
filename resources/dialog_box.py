@@ -44,7 +44,7 @@ class Icon(Enum):
 @dataclass
 class DialoguePhrase:
     text: str
-    speed: float = 25.0
+    speed: float = 23.0
     effect: TextEffect = TextEffect.NORMAL
     voice: Voice = Voice.DEFAULT
     font_name: Optional[str] = None
@@ -52,6 +52,7 @@ class DialoguePhrase:
     skippable: bool = True
     pitch: float = 1.0
     logo: any = None
+    pause: float = 0.15
 
 
 class DialogBox:
@@ -70,16 +71,21 @@ class DialogBox:
         self.char_timer = 0.0
         self.visible_chars_count = 0
         self.seconds_per_char = 0.0
+        self.pause_timer = 0.0
+        self.is_paused = False
+        self.pauses_passed = 0
         self._last_w = window.width
         self._last_h = window.height
         self._resize_threshold = 5
-        try:
-            v_snd = self.reg.get(
-                'common/sounds/sfx/voices/goverment_voice.wav')
-            self.voices = {v: v_snd for v in Voice}
-            self.voices[Voice.NONE] = None
-        except:
-            self.voices = {v: None for v in Voice}
+        self.voices = {
+            Voice.FEAR: self.reg.get('common/sounds/sfx/voices/fear.wav'),
+            Voice.PLAYER: self.reg.get('common/sounds/sfx/voices/player.wav'),
+            Voice.GOVERMENT: self.reg.get('common/sounds/sfx/voices/goverment.wav'),
+            Voice.CIVILIAN: self.reg.get('common/sounds/sfx/voices/default.wav'),
+            Voice.POSTMAN: self.reg.get('common/sounds/sfx/voices/default.wav'),
+            Voice.DEFAULT: self.reg.get('common/sounds/sfx/voices/default.wav'),
+            Voice.NONE: None
+        }
         self.phrases: List[DialoguePhrase] = []
         self.current_idx = -1
         self.is_active = False
@@ -108,8 +114,10 @@ class DialogBox:
         self.base_font_size = int(36 * self.scale)
         if self.is_active and 0 <= self.current_idx < len(self.phrases):
             prog = self.visible_chars_count
+            passed = self.pauses_passed
             self._load_phrase(self.current_idx)
             self.visible_chars_count = min(prog, len(self.char_sprites))
+            self.pauses_passed = passed
 
     def start_dialogue(self, phrases: List[DialoguePhrase]):
         self.phrases = phrases
@@ -117,6 +125,9 @@ class DialogBox:
         self.is_active = True
         self.visible_chars_count = 0
         self.char_timer = 0.0
+        self.pause_timer = 0.0
+        self.is_paused = False
+        self.pauses_passed = 0
         self._load_phrase(0)
 
     def _load_phrase(self, idx: int):
@@ -127,6 +138,9 @@ class DialogBox:
         if self.current_idx != idx:
             self.char_timer = 0.0
             self.visible_chars_count = 0
+            self.pause_timer = 0.0
+            self.is_paused = False
+            self.pauses_passed = 0
         self.waiting_for_input = False
         self.portrait_list.clear()
         indent_x = 0
@@ -144,8 +158,11 @@ class DialogBox:
                 indent_x = s.width + self.padding
         max_w = self.width - (self.padding * 2) - indent_x
         max_h = self.height - (self.padding * 1.5)
+        self.pause_indices = [i for i, char in enumerate(
+            self.current_phrase.text) if char == "|"]
+        clean_text = self.current_phrase.text.replace("|", "")
         lines, final_size = self._wrap_and_fit(
-            self.current_phrase.text, self.base_font_size, max_w, max_h)
+            clean_text, self.base_font_size, max_w, max_h)
         self.char_sprites = []
         self.char_positions = []
         start_x = self.x - self.width / 2 + self.padding + indent_x
@@ -207,23 +224,50 @@ class DialogBox:
                 self.current_phrase.callback()
                 self.callback_fired = True
             return
+        if self.is_paused:
+            self.pause_timer -= delta_time
+            if self.pause_timer <= 0:
+                self.is_paused = False
+            return
         self.char_timer += delta_time
         self.time_since_last_sound += delta_time
-        while self.char_timer >= self.seconds_per_char and self.visible_chars_count < len(self.char_sprites):
-            self.char_timer -= self.seconds_per_char
-            self.visible_chars_count += 1
-            idx = self.visible_chars_count - 1
-            if idx < len(self.char_sprites):
-                char = self.char_sprites[idx].text
-                if char.strip() and self.voices.get(self.current_phrase.voice):
+        while self.char_timer >= self.seconds_per_char:
+            current_raw_idx = self.visible_chars_count + self.pauses_passed
+            if self.pauses_passed < len(self.pause_indices) and current_raw_idx == self.pause_indices[self.pauses_passed]:
+                if self.current_phrase.pause > 0:
+                    self.is_paused = True
+                    self.pause_timer = self.current_phrase.pause
+                    self.pauses_passed += 1
+                    self.char_timer = 0
+                    return
+                self.pauses_passed += 1
+                continue
+            if self.visible_chars_count < len(self.char_sprites):
+                char_obj = self.char_sprites[self.visible_chars_count]
+                char_text = char_obj.text
+                self.visible_chars_count += 1
+                self.char_timer -= self.seconds_per_char
+                if char_text.strip() and self.voices.get(self.current_phrase.voice):
                     if self.time_since_last_sound >= self.sound_interval:
-                        p = random.uniform(0.9, 1.1) * \
-                            self.current_phrase.pitch
+                        if self.current_phrase.voice == Voice.GOVERMENT:
+                            p = random.uniform(0.9, 1) * \
+                                self.current_phrase.pitch
+                        elif self.current_phrase.voice == Voice.PLAYER:
+                            p = random.uniform(0.98, 1.03) * \
+                                self.current_phrase.pitch
+                        else:
+                            p = random.uniform(0.95, 1.05) * \
+                                self.current_phrase.pitch
                         arcade.play_sound(
                             self.voices[self.current_phrase.voice], volume=0.3, speed=p)
                         self.time_since_last_sound = 0.0
-        if self.visible_chars_count >= len(self.char_sprites):
-            self.waiting_for_input = True
+                if char_text in ".,!?:;":
+                    self.is_paused = True
+                    self.pause_timer = self.seconds_per_char * 3.5
+                    break
+            else:
+                self.waiting_for_input = True
+                break
 
     def draw(self):
         if not self.is_active:
@@ -254,12 +298,16 @@ class DialogBox:
         if not self.waiting_for_input:
             if self.current_phrase.skippable:
                 self.visible_chars_count = len(self.char_sprites)
+                self.is_paused = False
                 self.waiting_for_input = True
         else:
             self.current_idx += 1
             if self.current_idx < len(self.phrases):
                 self.visible_chars_count = 0
                 self.char_timer = 0.0
+                self.pause_timer = 0.0
+                self.pauses_passed = 0
+                self.is_paused = False
                 self._load_phrase(self.current_idx)
             else:
                 self.is_active = False
