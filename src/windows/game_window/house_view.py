@@ -1,6 +1,7 @@
 import arcade
 from src.registry import reg
 from resources.dialog_box import *
+from src.windows.game_window.attic_view import AtticView
 from src.settings import settings
 from resources.languages import LANGUAGES
 
@@ -22,6 +23,7 @@ class HouseView(arcade.View):
         self.phone_tube_sprite = None
         self.bed_sprite = None
         self.door_sprite = None
+        self.luke_sprite = None
 
         self.can_interact = False
 
@@ -36,6 +38,11 @@ class HouseView(arcade.View):
         self.sequence_step = 0
         self.sequence_timer = 0.0
         self.can_open_door = False
+        
+        self.transition_to_attic = False
+        self.transition_timer = 0.0
+        self.transition_duration = 1.0
+        self.fade_alpha = 0
 
     def on_show_view(self):
         self.window.background_color = arcade.color.BLACK
@@ -69,8 +76,14 @@ class HouseView(arcade.View):
         self.door_sprite.hover_text = self.reg.get(
             '1episode/textures/ui/buttons/hovered/door_day_hovered.png')
 
+        self.luke_sprite = arcade.Sprite(
+            self.reg.get('1episode/textures/ui/buttons/normal/luke_day.png'))
+        self.luke_sprite.normal_text = self.luke_sprite.texture
+        self.luke_sprite.hover_text = self.reg.get(
+            '1episode/textures/ui/buttons/hovered/luke_day_hovered.png')
+
         self.interactable_sprites.extend(
-            [self.bed_sprite, self.door_sprite, self.phone_base_sprite, self.phone_tube_sprite])
+            [self.bed_sprite, self.door_sprite, self.luke_sprite, self.phone_base_sprite, self.phone_tube_sprite])
         self.update_layout()
 
     def update_layout(self):
@@ -97,6 +110,9 @@ class HouseView(arcade.View):
         door_w, door_h = 0.19, 0.6  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         door_x, door_y = 0.92, 0.43  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
+        luke_w, luke_h = 0.18, 0.18
+        luke_x, luke_y = 0.5, 0.91
+
         self.phone_base_sprite.width = w * p_base_w
         self.phone_base_sprite.height = h * p_base_h
         self.phone_base_sprite.center_x = w * p_base_x
@@ -120,6 +136,11 @@ class HouseView(arcade.View):
         self.door_sprite.center_x = w * door_x
         self.door_sprite.center_y = h * door_y
 
+        self.luke_sprite.width = w * luke_w
+        self.luke_sprite.height = h * luke_h
+        self.luke_sprite.center_x = w * luke_x
+        self.luke_sprite.center_y = h * luke_y
+
         self.dialog_box._setup_dimensions()
 
     def on_update(self, delta_time):
@@ -127,6 +148,16 @@ class HouseView(arcade.View):
 
         self.update_phone_logic(delta_time)
         self.dialog_box.update(delta_time)
+        
+        if self.transition_to_attic:
+            self.transition_timer += delta_time
+            progress = min(self.transition_timer / self.transition_duration, 1.0)
+            self.fade_alpha = int(255 * progress)
+            
+            if progress >= 1.0:
+                zzz_view = AtticView(self.window)
+                self.window.show_view(zzz_view)
+                return
 
         if not self.dialog_box.is_active:
             if self.sequence_step == 0:
@@ -175,6 +206,8 @@ class HouseView(arcade.View):
         if self.dialog_finished and not self.dialog_box.is_active:
             if self.can_open_door:
                 self.can_interact = True
+        
+        self.time_elapsed += delta_time
 
     def update_phone_logic(self, delta_time):
         if self.sequence_step == 0.2:
@@ -211,13 +244,28 @@ class HouseView(arcade.View):
         self.bg_list.draw()
         self.interactable_sprites.draw()
         self.dialog_box.draw()
+        
+        if self.fade_alpha > 0:
+            arcade.draw_lrbt_rectangle_filled(
+                left=0,
+                right=self.window.width,
+                bottom=0,
+                top=self.window.height,
+                color=(0, 0, 0, self.fade_alpha)
+            )
 
     def on_mouse_motion(self, x, y, dx, dy):
-        for s in [self.bed_sprite, self.door_sprite]:
+        if self.transition_to_attic:
+            return
+        
+        for s in [self.bed_sprite, self.door_sprite, self.luke_sprite]:
             s.texture = s.hover_text if s.collides_with_point(
                 (x, y)) else s.normal_text
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.transition_to_attic:
+            return
+        
         if (self.phone_base_sprite.collides_with_point((x, y)) or self.phone_tube_sprite.collides_with_point((x, y))) and not self.dialog_box.is_active and self.sequence_step != 0.2:
             if self.isRinging:
                 self.isRinging = False
@@ -243,8 +291,12 @@ class HouseView(arcade.View):
                     self.can_open_door = False
                     self.postman_here = True
                     self.start_dialog(4)
-                else:
-                    pass
+            elif self.luke_sprite.collides_with_point((x, y)):
+                print('Люк небоходящий')
+                self.transition_to_attic = True
+                self.transition_timer = 0.0
+            else:
+                pass
 
     def start_dialog(self, t):
         if t == 0:

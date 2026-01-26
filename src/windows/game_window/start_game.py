@@ -24,7 +24,7 @@ class StartGame(arcade.View):
         self.bg_sprite = arcade.Sprite()
 
         self.fade_list = arcade.SpriteList()
-        
+
         self.object_list = arcade.SpriteList()
 
         self.fade_sprite = None
@@ -42,12 +42,14 @@ class StartGame(arcade.View):
             '1episode/textures/ui/buttons/normal/bed_day.png'))
         self.door_sprite = arcade.Sprite(self.reg.get(
             '1episode/textures/ui/buttons/normal/door_day.png'))
+        self.luke_sprite = arcade.Sprite(self.reg.get(
+            '1episode/textures/ui/buttons/normal/luke_day.png'))
         self.intro_textures = [self.reg.get(
             f'1episode/textures/intro/{img}') for img in self.intro_images]
-        
+
         w, h = self.window.width, self.window.height
-        
-                # ДИМА ЗАДАЙ КООРДИНАТЫ
+
+        # ДИМА ЗАДАЙ КООРДИНАТЫ
 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         p_base_w, p_base_h = 0.05, 0.14  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         p_base_x, p_base_y = 0.5, 0.4  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -60,6 +62,9 @@ class StartGame(arcade.View):
 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         door_w, door_h = 0.19, 0.6  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         door_x, door_y = 0.92, 0.43  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+        luke_w, luke_h = 0.18, 0.18
+        luke_x, luke_y = 0.5, 0.91
 
         self.phone_base_sprite.width = w * p_base_w
         self.phone_base_sprite.height = h * p_base_h
@@ -83,15 +88,20 @@ class StartGame(arcade.View):
         self.door_sprite.height = h * door_h
         self.door_sprite.center_x = w * door_x
         self.door_sprite.center_y = h * door_y
-        
+
+        self.luke_sprite.width = w * luke_w
+        self.luke_sprite.height = h * luke_h
+        self.luke_sprite.center_x = w * luke_x
+        self.luke_sprite.center_y = h * luke_y
 
         self.bg_list.append(self.bg_sprite)
 
         self.fade_sprite = arcade.SpriteSolidColor(100, 100, color=(0, 0, 0))
         self.fade_sprite.alpha = 255
         self.fade_list.append(self.fade_sprite)
-        
-        self.object_list.extend([self.phone_base_sprite, self.phone_tube_sprite, self.bed_sprite, self.door_sprite])
+
+        self.object_list.extend(
+            [self.phone_base_sprite, self.phone_tube_sprite, self.bed_sprite, self.door_sprite, self.luke_sprite])
 
         self.intro_active = True
         self.on_resize(self.window.width, self.window.height)
@@ -124,8 +134,10 @@ class StartGame(arcade.View):
         self.clear()
         self.bg_list.draw()
 
-        if self.current_slide_idx == 2: self.object_list.draw()
-        if self.intro_active: self.fade_list.draw()
+        if self.current_slide_idx == 2:
+            self.object_list.draw()
+        if self.intro_active:
+            self.fade_list.draw()
 
     def on_resize(self, width, height):
         w, h = width, height
