@@ -30,15 +30,15 @@ class Icon(Enum):
     DEVELOPER = 'common/textures/icons/test_icon.png'
     PHONE = 'common/textures/icons/phone_icon.png'
 
-    class POSTMAN(Enum):
-        DEFAULT = 'common/textures/icons/postman/default.png'
-        THINKING = 'common/textures/icons/postman/thinking.png'
-        SAD = 'common/textures/icons/postman/sad.png'
-        ANGRY = 'common/textures/icons/postman/angry.png'
+    
+    POSTMAN_DEFAULT = 'common/textures/icons/postman/default.png'
+    POSTMAN_THINKING = 'common/textures/icons/postman/thinking.png'
+    POSTMAN_SAD = 'common/textures/icons/postman/sad.png'
+    POSTMAN_ANGRY = 'common/textures/icons/postman/angry.png'
 
-    class PLAYER(Enum):
-        DEFAULT = 'common/textures/icons/main_character/default.png'
-        ANGRY = 'common/textures/icons/main_character/angry.png'
+    
+    PLAYER_DEFAULT = 'common/textures/icons/main_character/default.png'
+    PLAYER_ANGRY = 'common/textures/icons/main_character/angry.png'
 
 
 @dataclass

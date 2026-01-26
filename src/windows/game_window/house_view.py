@@ -85,22 +85,24 @@ class HouseView(arcade.View):
 
         # ДИМА ЗАДАЙ КООРДИНАТЫ
 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_base_w, p_base_h = 0.25, 0.35  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_base_x, p_base_y = 0.5, 0.25  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        p_base_w, p_base_h = 0.05, 0.14  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        p_base_x, p_base_y = 0.5, 0.4  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_tube_w, p_tube_h = 0.22, 0.12  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_tube_offset_y = 0.105  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        p_tube_w, p_tube_h = 0.11, 0.09  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        p_tube_offset_y = 0.04  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 #
-        bed_w, bed_h = 0.35, 0.45  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        bed_x, bed_y = 0.18, 0.22  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        bed_w, bed_h = 0.36, 0.45  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        bed_x, bed_y = 0.18, 0.24  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        door_w, door_h = 0.21, 0.6  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        door_w, door_h = 0.19, 0.6  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         door_x, door_y = 0.92, 0.43  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
         self.phone_base_sprite.width = w * p_base_w
         self.phone_base_sprite.height = h * p_base_h
         self.phone_base_sprite.center_x = w * p_base_x
         self.phone_base_sprite.center_y = h * p_base_y
+        self.phone_base_sprite.scale_x = 0.15
+        self.phone_base_sprite.scale_y = 0.1
 
         self.phone_tube_sprite.width = w * p_tube_w
         self.phone_tube_sprite.height = h * p_tube_h
@@ -189,7 +191,7 @@ class HouseView(arcade.View):
                 self.isStartedToRing = True
 
             h = self.window.height
-            offset = h * 0.105
+            offset = h * 0.052
             shake = math.sin(self.time_elapsed * 60) * (h * 0.003)
             self.phone_tube_sprite.angle = math.sin(self.time_elapsed * 40) * 5
             self.phone_tube_sprite.center_y = self.phone_base_sprite.center_y + offset + shake
@@ -254,15 +256,15 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['1'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['2'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['3'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['4'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['5'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['6'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['7'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['8'][self.language],
@@ -272,7 +274,7 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['10'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['11'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['12'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE, skippable=False, speed=10),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['13'][self.language],
@@ -280,7 +282,7 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['14'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['15'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['16'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['17'][self.language],
@@ -290,7 +292,7 @@ class HouseView(arcade.View):
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['19'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE, skippable=False),
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['20'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_phone_end)
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT, callback=self._on_phone_end)
             ])
         if t == 1.5:
             self.dialog_box.start_dialogue([
@@ -300,9 +302,9 @@ class HouseView(arcade.View):
         if t == 2:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['monologues']['1'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.ANGRY),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_ANGRY),
                 DialoguePhrase(LANGUAGES['monologues']['2'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_monologue1_end),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT, callback=self._on_monologue1_end),
             ])
         if t == 2.5:
             self.dialog_box.start_dialogue([
@@ -312,22 +314,22 @@ class HouseView(arcade.View):
         if t == 3:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['monologues']['3'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(LANGUAGES['monologues']['4'][self.language],
-                               voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT, callback=self._on_t3_end),
+                               voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT, callback=self._on_t3_end),
             ])
         if t == 4:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['dialogues']['postman_talkings']['1']
-                               [self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
+                               [self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
                 DialoguePhrase(LANGUAGES['dialogues']['postman_talkings']['2']
-                               [self.language], voice=Voice.PLAYER, logo=Icon.PLAYER.DEFAULT),
+                               [self.language], voice=Voice.PLAYER, logo=Icon.PLAYER_DEFAULT),
                 DialoguePhrase(
-                    LANGUAGES['dialogues']['postman_talkings']['3'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
+                    LANGUAGES['dialogues']['postman_talkings']['3'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
                 DialoguePhrase(
-                    LANGUAGES['dialogues']['postman_talkings']['4'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
+                    LANGUAGES['dialogues']['postman_talkings']['4'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
                 DialoguePhrase(
-                    LANGUAGES['dialogues']['postman_talkings']['5'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN.DEFAULT),
+                    LANGUAGES['dialogues']['postman_talkings']['5'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
             ])
 
     def on_key_press(self, key, modifiers):
