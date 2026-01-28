@@ -27,6 +27,12 @@ class StartView(arcade.View):
 
         self.overlay = None
         self.overlay_sprite_list = arcade.SpriteList()
+        
+        # Для плавного перехода
+        self.transition_to_menu = False
+        self.transition_timer = 0.0
+        self.transition_duration = 1.0
+        self.transition_alpha = 0
 
         self.wind_sound: arcade.Sound = self.reg.get(
             'common/sounds/sfx/ambient/wind.wav')
@@ -42,7 +48,7 @@ class StartView(arcade.View):
         self.text_to_continue = arcade.Text(
             text=LANGUAGES['press_for_cont'][self.language],
             x=self.window.width // 2,
-            y=self.window.height * 0.15,
+            y=self.window.height * 0.18,
             color=(255, 255, 255, 0),
             font_size=28,
             font_name='Montserrat',
@@ -53,31 +59,50 @@ class StartView(arcade.View):
         self.original_font_size_text_to_continue = 28
 
     def setup(self):
-        """Инициализация представления"""
         self.language = self.window.language
         self.create_overlay()
         self.load_background()
         self.wind_sound_player = self.wind_sound.play()
 
     def on_show_view(self):
-        """Вызывается при показе этого представления"""
         self.setup()
         self.timer = 0.0
         self.text_to_continue_timer = 0.0
         self.click_count = 0
         self.isTextToContinue = False
 
+        self.transition_to_menu = False
+        self.transition_timer = 0.0
+        self.transition_alpha = 0
+
     def on_draw(self):
-        """Рисование"""
         self.clear()
 
         self.background_sprite_list.draw()
         self.overlay_sprite_list.draw()
 
         self.batch.draw()
+        
+        if self.transition_alpha > 0:
+            arcade.draw_lrbt_rectangle_filled(
+                left=0,
+                right=self.window.width,
+                bottom=0,
+                top=self.window.height,
+                color=(0, 0, 0, self.transition_alpha)
+            )
 
     def on_update(self, delta_time):
-        """Обновление логики"""
+        if self.transition_to_menu:
+            self.transition_timer += delta_time
+            progress = min(self.transition_timer / self.transition_duration, 1.0)
+            self.transition_alpha = int(255 * progress)
+            
+            if progress >= 1.0:
+                self.wind_sound.stop(self.wind_sound_player)
+                self.window.switch_view('main_menu')
+            return
+
         self.timer += delta_time
 
         if self.overlay and self.timer <= self.fade_background_duration:
@@ -105,12 +130,14 @@ class StartView(arcade.View):
         self.update_text_to_continue_position_and_size()
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.wind_sound.stop(self.wind_sound_player)
-        self.window.switch_view('main_menu')
+        if not self.transition_to_menu:
+            self.transition_to_menu = True
+            self.transition_timer = 0.0
 
     def on_key_press(self, symbol, modifiers):
-        self.wind_sound.stop(self.wind_sound_player)
-        self.window.switch_view('main_menu')
+        if not self.transition_to_menu:
+            self.transition_to_menu = True
+            self.transition_timer = 0.0
 
     def load_background(self):
         texture = self.reg.get(

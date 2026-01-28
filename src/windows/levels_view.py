@@ -21,6 +21,20 @@ class LevelsView(arcade.View):
 
         self.texts = []
 
+        # Для плавных переходов
+        self.fade_in = True
+        self.fade_timer = 0.0
+        self.fade_duration = 1.0
+        self.fade_alpha = 255
+
+        self.transition_to_menu = False
+        self.transition_timer = 0.0
+        self.transition_duration = 1.0
+        self.transition_alpha = 0
+
+        self.transition_to_loading = False
+        self.loading_target = None
+
         self.ui_text_left = arcade.Text(
             "<", 0, 0, arcade.color.WHITE, font_size=60, anchor_y="center", font_name='MS PGothic')
         self.ui_text_right = arcade.Text(
@@ -32,6 +46,15 @@ class LevelsView(arcade.View):
         self.episode_buttons.clear()
         self.background_sprite_list.clear()
         self.texts.clear()
+
+        self.fade_in = True
+        self.fade_timer = 0.0
+        self.fade_alpha = 255
+        self.transition_to_menu = False
+        self.transition_timer = 0.0
+        self.transition_alpha = 0
+        self.transition_to_loading = False
+        self.loading_target = None
 
         texture = self.reg.get(
             'common/textures/backgrounds/main_menu_background.png')
@@ -88,6 +111,39 @@ class LevelsView(arcade.View):
         self.setup()
 
     def on_update(self, delta_time: float):
+        if self.transition_to_menu:
+            self.transition_timer += delta_time
+            progress = min(self.transition_timer /
+                           self.transition_duration, 1.0)
+            self.transition_alpha = int(255 * progress)
+
+            if progress >= 1.0:
+                self.window.switch_view('main_menu')
+            return
+
+        if self.transition_to_loading and self.loading_target:
+            self.transition_timer += delta_time
+            progress = min(self.transition_timer /
+                           self.transition_duration, 1.0)
+            self.transition_alpha = int(255 * progress)
+
+            if progress >= 1.0:
+                if 'common/sounds/music/main_theme.ogg' in self.window.music_players.keys():
+                    self.window.stop_definite_music(
+                        'common/sounds/music/main_theme.ogg')
+                self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
+                self.window.switch_view(self.loading_target)
+            return
+
+        # Плавное появление
+        if self.fade_in and not self.transition_to_menu and not self.transition_to_loading:
+            self.fade_timer += delta_time
+            progress = min(self.fade_timer / self.fade_duration, 1.0)
+            self.fade_alpha = int(255 * (1 - progress))
+
+            if progress >= 1.0:
+                self.fade_in = False
+
         diff = self.target_offset - self.current_offset
         if abs(diff) < 0.1:
             self.current_offset = self.target_offset
@@ -118,9 +174,29 @@ class LevelsView(arcade.View):
             if self.current_episode < 2:
                 self.ui_text_right.draw()
 
+        # Рисуем затемнение для плавного появления
+        if self.fade_alpha > 0 and not self.transition_to_menu and not self.transition_to_loading:
+            arcade.draw_lrbt_rectangle_filled(
+                left=0,
+                right=self.window.width,
+                bottom=0,
+                top=self.window.height,
+                color=(0, 0, 0, self.fade_alpha)
+            )
+
+        # Рисуем затемнение для плавного ухода
+        if self.transition_alpha > 0:
+            arcade.draw_lrbt_rectangle_filled(
+                left=0,
+                right=self.window.width,
+                bottom=0,
+                top=self.window.height,
+                color=(0, 0, 0, self.transition_alpha)
+            )
+
     def on_mouse_press(self, x, y, button, modifiers):
         is_moving = abs(self.target_offset - self.current_offset) > 1.0
-        if is_moving:
+        if is_moving or self.transition_to_menu or self.transition_to_loading:
             return
 
         if button == arcade.MOUSE_BUTTON_LEFT:
@@ -132,12 +208,12 @@ class LevelsView(arcade.View):
             for btn in self.episode_buttons:
                 if btn.collides_with_point((x, y)):
                     print(f"Выбран эпизод {btn.episode_index + 1}")
-                    if 'common/sounds/music/main_theme.ogg' in self.window.music_players.keys():
-                        self.window.stop_definite_music(
-                            'common/sounds/music/main_theme.ogg')
-                    self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
-                    self.window.switch_view(
-                        ['loading_view', 'game_start_view', f'{btn.episode_index + 1}episode'])
+                    self.transition_to_loading = True
+                    self.transition_timer = 0.0
+                    self.transition_alpha = 0
+                    self.loading_target = [
+                        'loading_view', 'game_start_view', f'{btn.episode_index + 1}episode']
+                    return
 
     def change_episode(self, index):
         self.current_episode = index
@@ -145,11 +221,13 @@ class LevelsView(arcade.View):
 
     def on_key_press(self, symbol, modifiers):
         is_moving = abs(self.target_offset - self.current_offset) > 1.0
-        if is_moving:
+        if is_moving or self.transition_to_menu or self.transition_to_loading:
             return
 
         if symbol == arcade.key.ESCAPE:
-            self.window.switch_view("main_menu")
+            self.transition_to_menu = True
+            self.transition_timer = 0.0
+            self.transition_alpha = 0
         elif symbol == arcade.key.LEFT and self.current_episode > 0:
             self.change_episode(self.current_episode - 1)
         elif symbol == arcade.key.RIGHT and self.current_episode < 2:
