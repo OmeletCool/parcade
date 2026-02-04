@@ -73,11 +73,8 @@ class LevelsView(arcade.View):
                 btn.center_x = float(self.window.width / 2)
                 btn.center_y = float(self.window.height / 2)
             else:
-                btn = arcade.SpriteSolidColor(
-                    int(self.window.width * 0.6),
-                    int(self.window.height * 0.6),
-                    (60, 60, 60, 255)
-                )
+                btn = arcade.Sprite(self.reg.get(
+                    'common/textures/backgrounds/closed_episodes.png'))
                 btn.episode_index = i
                 btn.center_x = float(self.window.width / 2 +
                                      (i * self.window.width))

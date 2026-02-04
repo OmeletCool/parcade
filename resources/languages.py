@@ -41,10 +41,12 @@ LANGUAGES = {
     'dialogues': {
         'ui_sound_desc': {
             'knocking': ['Стук в дверь. . .', 'A knock at the door. . .', 'Trokitje në derë. . .']
+
         },
         'items': {
             'gate_locked': ['Закрыто. Нужен ключ.', 'Locked. Need a key.', 'Mbyllur.'],
-            'key_used': ['Ключ подошел.', 'The key fits.', 'Qelësi u përshtat.']
+            'key_used': ['Ключ подошел.', 'The key fits.', 'Qelësi u përshtat.'],
+            'key_found': ['Вы подобрали {color:51,110,25}ключ{/color}.', 'You\'ve found the {color:51,110,25}key{/color}.', 'Ju e keni gjetur {color:51,110,25}çelësin{/color}.']
         },
         'postman_talkings': {
             '1': ['Доброго здоровья-с.| Осмелюсь побеспокоить. Не изволите ли вы быть господином Н.?', 'Good day to you, sir. | I beg your pardon for the disturbance. Might you be Mr. N.?', 'Tungjatjeta, zotëri. | Më falni që ju shqetësoj. A do të ishit ju, ndoshta, z. N.?'],
@@ -105,7 +107,7 @@ LANGUAGES = {
 
                 '20': ['А как я смогу отличить обычный предмет от аномального?', 'And how am I supposed to tell an ordinary object from an anomalous one?', 'Dhe si mund ta dalloj një objekt të zakonshëm nga një anormal?'],
 
-                '21': ['', '', ''],
+                '21': ['Вы {color:99,11,15}ничтожны{/color}!', 'Нou are {color:99,11,15}insignificant{/color}!', 'ju jeni të {color:99,11,15}parëndësishëm!{/color}!'],
                 '22': ['', '', ''],
                 '23': ['', '', ''],
                 '24': ['', '', ''],
