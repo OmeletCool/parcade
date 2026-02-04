@@ -400,6 +400,11 @@ class HouseView(arcade.View):
         self.can_open_door = True
         self.dialog_finished = True
 
+    def _on_postman_dialogue_end(self):
+        self.postman_interaction_finished = True
+        self.can_interact = True
+        self.can_open_door = False
+
     def on_draw(self):
         self.clear()
         self.bg_list.draw()
@@ -491,6 +496,7 @@ class HouseView(arcade.View):
 
                 if self.postman_interaction_finished:
                     self.window.switch_view('game_backyard_view')
+                    return
 
                 if self.can_open_door:
                     self.can_open_door = False
@@ -506,8 +512,6 @@ class HouseView(arcade.View):
                 print('Переход на чердак')
                 self.transition_to_attic = True
                 self.transition_timer = 0.0
-            else:
-                pass
 
     def start_dialog(self, t):
         if self.day_counter >= self.max_days and not self.phone_after_days_called:
@@ -598,7 +602,7 @@ class HouseView(arcade.View):
                 DialoguePhrase(
                     LANGUAGES['dialogues']['postman_talkings']['4'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
                 DialoguePhrase(
-                    LANGUAGES['dialogues']['postman_talkings']['5'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT),
+                    LANGUAGES['dialogues']['postman_talkings']['5'][self.language], voice=Voice.POSTMAN, logo=Icon.POSTMAN_DEFAULT, callback=self._on_postman_dialogue_end),
             ])
 
     def on_key_press(self, key, modifiers):

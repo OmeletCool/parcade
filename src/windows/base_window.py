@@ -71,6 +71,9 @@ class BaseWindow(arcade.Window):
             elif view_name == 'game_backyard_view':
                 from src.windows.game_window.backyard_view import BackyardView
                 self.views[view_name] = BackyardView(self)
+            elif view_name == 'game_field_view':
+                from src.windows.game_window.game_field_view import GameFieldView
+                self.views[view_name] = GameFieldView(self)
 
         return self.views[view_name]
 

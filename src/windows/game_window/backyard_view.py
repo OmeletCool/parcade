@@ -108,15 +108,17 @@ class BackyardView(arcade.View):
                     DialoguePhrase(
                         LANGUAGES['dialogues']['items']['gate_locked'][self.language], voice=Voice.PLAYER)
                 ])
+            return
+        is_open = self.window.game_state['is_gate_open']
+
+        if not is_open:
+            self.window.game_state["is_gate_open"] = True
+            self.gate_sprite.texture = self.gate_open_texture
+            self.window.play_definite_music(
+                'common/sounds/sfx/doors/door_open.wav')
+
         else:
-            is_open = self.window.game_state["is_gate_open"]
-            self.window.game_state["is_gate_open"] = not is_open
-
-            new_tex = self.gate_closed_texture if is_open else self.gate_open_texture
-            self.gate_sprite.texture = new_tex
-
-            sfx = 'common/sounds/sfx/doors/door_close.wav' if is_open else 'common/sounds/sfx/doors/door_open.wav'
-            self.window.play_definite_music(sfx)
+            self.window.switch_view('game_field_view.py')
 
     def on_key_press(self, key, modifiers):
         if self.dialog_box.is_active and key in [arcade.key.ENTER, arcade.key.Z]:

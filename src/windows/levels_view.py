@@ -130,7 +130,8 @@ class LevelsView(arcade.View):
                 if 'common/sounds/music/main_theme.ogg' in self.window.music_players.keys():
                     self.window.stop_definite_music(
                         'common/sounds/music/main_theme.ogg')
-                self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
+                if 'common/sounds/music/main_theme.ogg' in self.window.forced_music:
+                    self.window.forced_music['common/sounds/music/main_theme.ogg'][1] = False
                 self.window.switch_view(self.loading_target)
             return
 
@@ -212,6 +213,7 @@ class LevelsView(arcade.View):
                     self.transition_alpha = 0
                     self.loading_target = [
                         'loading_view', 'game_start_view', f'{btn.episode_index + 1}episode']
+                    # 'game_field_view'
                     return
 
     def change_episode(self, index):
