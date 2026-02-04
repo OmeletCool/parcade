@@ -21,7 +21,6 @@ class LevelsView(arcade.View):
 
         self.texts = []
 
-        # Для плавных переходов
         self.fade_in = True
         self.fade_timer = 0.0
         self.fade_duration = 1.0
@@ -207,7 +206,7 @@ class LevelsView(arcade.View):
 
             for btn in self.episode_buttons:
                 if btn.collides_with_point((x, y)):
-                    print(f"Выбран эпизод {btn.episode_index + 1}")
+                    print(f"Эпизод {btn.episode_index + 1}")
                     self.transition_to_loading = True
                     self.transition_timer = 0.0
                     self.transition_alpha = 0
