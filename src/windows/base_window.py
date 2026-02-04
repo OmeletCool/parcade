@@ -25,6 +25,22 @@ class BaseWindow(arcade.Window):
             'key_picked_up': False
         }
 
+        self.night_data = {
+            "is_night_active": False,
+            "current_time": "12:00 AM",
+            "hours": 0,           # для отсчета 0-6
+            "missed_anomalies": 0,  # упущенные до клика + упущенные аномалии на осмотре
+            "caught_anomalies": 0,  # правильно сфотографированные
+            "wrong_photos": 0,    # сфотографированные обычные предметы
+        }
+
+        # Словарь активных аномалий (потом будем менять их из газеты/сюжета)
+        self.active_anomalies = {
+            "visual_glitch": True,
+            "audio_distort": False,
+            "red_eyes": True,
+        }
+
         self.set_icon(pyglet.image.load(
             "resources/common/textures/ui/icons/icon.jpg"))
 
