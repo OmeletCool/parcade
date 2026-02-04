@@ -26,6 +26,7 @@ class HouseView(arcade.View):
         self.luke_sprite = None
 
         self.can_interact = False
+        self.postman_interaction_finished = False
 
         self.dialog_box = DialogBox(
             self.window, default_font_name="Montserrat")
@@ -38,19 +39,19 @@ class HouseView(arcade.View):
         self.sequence_step = 0
         self.sequence_timer = 0.0
         self.can_open_door = False
-        
+
         self.transition_to_attic = False
         self.transition_timer = 0.0
         self.transition_duration = 1.0
         self.fade_alpha = 0
-        
+
         self.transition_to_night = False
         self.night_transition_timer = 0.0
         self.night_transition_duration = 3.0
         self.night_fade_alpha = 0
         self.is_night = False
         self.textures_changed = False
-        
+
         self.day_counter = 0
         self.max_days = 4
         self.phone_after_days_called = False
@@ -107,19 +108,14 @@ class HouseView(arcade.View):
             self.fade_sprite.width, self.fade_sprite.height = w, h
             self.fade_sprite.position = (w / 2, h / 2)
 
-        # ДИМА ЗАДАЙ КООРДИНАТЫ
-# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_base_w, p_base_h = 0.05, 0.14  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_base_x, p_base_y = 0.5, 0.4  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_tube_w, p_tube_h = 0.11, 0.09  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        p_tube_offset_y = 0.04  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-#
-        bed_w, bed_h = 0.36, 0.45  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        bed_x, bed_y = 0.18, 0.24  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        door_w, door_h = 0.19, 0.6  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        door_x, door_y = 0.92, 0.43  # AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        p_base_w, p_base_h = 0.05, 0.14
+        p_base_x, p_base_y = 0.5, 0.4
+        p_tube_w, p_tube_h = 0.11, 0.09
+        p_tube_offset_y = 0.04
+        bed_w, bed_h = 0.36, 0.45
+        bed_x, bed_y = 0.18, 0.24
+        door_w, door_h = 0.19, 0.6
+        door_x, door_y = 0.92, 0.43
 
         luke_w, luke_h = 0.18, 0.18
         luke_x, luke_y = 0.5, 0.91
@@ -156,54 +152,54 @@ class HouseView(arcade.View):
 
     def on_update(self, delta_time):
         self.time_elapsed += delta_time
-        
-        # Обработка перехода день/ночь
+
         if self.transition_to_night:
             self.night_transition_timer += delta_time
-            progress = min(self.night_transition_timer / self.night_transition_duration, 1.0)
-            
+            progress = min(self.night_transition_timer /
+                           self.night_transition_duration, 1.0)
+
             if progress < 0.5:
                 self.night_fade_alpha = int(510 * progress)
             else:
                 self.night_fade_alpha = int(510 * (1 - progress))
-            
+
             if progress >= 0.5 and not self.textures_changed:
                 if not self.is_night:
                     self._switch_to_night_textures()
                 else:
                     self._switch_to_day_textures()
                 self.textures_changed = True
-            
+
             if progress >= 1.0:
                 self.transition_to_night = False
                 self.night_fade_alpha = 0
                 self.textures_changed = False
-                
+
                 if not self.is_night:
                     self.day_counter += 1
                     print(self.day_counter)
-                    
+
                     if self.day_counter >= self.max_days and not self.phone_after_days_called:
-                        print("Прошло 4 дня, телефон будет звонить при следующем нажатии на кровать")
+                        print(
+                            "Прошло 4 дня, телефон будет звонить при следующем нажатии на кровать")
             return
-        
+
         if self.transition_to_attic:
             self.transition_timer += delta_time
-            progress = min(self.transition_timer / self.transition_duration, 1.0)
+            progress = min(self.transition_timer /
+                           self.transition_duration, 1.0)
             self.fade_alpha = int(255 * progress)
-            
+
             if progress >= 1.0:
                 attic_view = AtticView(self.window)
                 self.window.show_view(attic_view)
                 return
 
-        # ВАЖНО: После 4 дней НЕ обновляем обычную логику диалогов
         if self.day_counter >= self.max_days and not self.phone_after_days_called:
-            # Только логика телефона, без обычных диалогов
             self.update_phone_logic(delta_time)
             self.dialog_box.update(delta_time)
             return
-        
+
         self.update_phone_logic(delta_time)
         self.dialog_box.update(delta_time)
 
@@ -259,12 +255,9 @@ class HouseView(arcade.View):
         if self.sequence_step == 0.2:
             return
 
-        # ВАЖНО: После 4 дней обычный звонок не работает
         if self.day_counter >= self.max_days and not self.phone_after_days_called:
-            # Звонок будет только при нажатии на кровать
             return
 
-        # Проверяем обычный звонок (только если не после 4 дней)
         if not self.dialog_finished and not self.isRinging and not self.dialog_box.is_active:
             if self.time_elapsed > self.ring_delay:
                 self.isRinging = True
@@ -272,7 +265,7 @@ class HouseView(arcade.View):
         if self.isRinging:
             if not self.isStartedToRing:
                 self.window.play_definite_music(
-                    '1episode/sounds/sfx/ambient/bringing_phone.wav', 
+                    '1episode/sounds/sfx/ambient/bringing_phone.wav',
                     isLooping=True
                 )
                 self.isStartedToRing = True
@@ -286,37 +279,44 @@ class HouseView(arcade.View):
 
     def _switch_to_night_textures(self):
         if not self.is_night:
-            night_bg = self.reg.get('1episode/textures/backgrounds/room_night.png')
+            night_bg = self.reg.get(
+                '1episode/textures/backgrounds/room_night.png')
             if night_bg:
                 self.bg_sprite.texture = night_bg
-            
-            night_bed = self.reg.get('1episode/textures/ui/buttons/normal/bed_night.png')
+
+            night_bed = self.reg.get(
+                '1episode/textures/ui/buttons/normal/bed_night.png')
             if night_bed:
                 self.bed_sprite.texture = night_bed
                 self.bed_sprite.normal_text = night_bed
-            
-            night_bed_hover = self.reg.get('1episode/textures/ui/buttons/hovered/bed_hovered.png')
+
+            night_bed_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/bed_hovered.png')
             if night_bed_hover:
                 self.bed_sprite.hover_text = night_bed_hover
-            
-            night_door = self.reg.get('1episode/textures/ui/buttons/normal/door_night.png')
+
+            night_door = self.reg.get(
+                '1episode/textures/ui/buttons/normal/door_night.png')
             if night_door:
                 self.door_sprite.texture = night_door
                 self.door_sprite.normal_text = night_door
-            
-            night_door_hover = self.reg.get('1episode/textures/ui/buttons/hovered/door_night_hovered.png')
+
+            night_door_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/door_night_hovered.png')
             if night_door_hover:
                 self.door_sprite.hover_text = night_door_hover
-            
-            night_luke = self.reg.get('1episode/textures/ui/buttons/normal/luke_night.png')
+
+            night_luke = self.reg.get(
+                '1episode/textures/ui/buttons/normal/luke_night.png')
             if night_luke:
                 self.luke_sprite.texture = night_luke
                 self.luke_sprite.normal_text = night_luke
-            
-            night_luke_hover = self.reg.get('1episode/textures/ui/buttons/hovered/luke_night_hovered.png')
+
+            night_luke_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/luke_night_hovered.png')
             if night_luke_hover:
                 self.luke_sprite.hover_text = night_luke_hover
-            
+
             self.is_night = True
             print("Установлены ночные текстуры")
 
@@ -325,34 +325,40 @@ class HouseView(arcade.View):
             day_bg = self.reg.get('1episode/textures/intro/room_day.png')
             if day_bg:
                 self.bg_sprite.texture = day_bg
-            
-            day_bed = self.reg.get('1episode/textures/ui/buttons/normal/bed_day.png')
+
+            day_bed = self.reg.get(
+                '1episode/textures/ui/buttons/normal/bed_day.png')
             if day_bed:
                 self.bed_sprite.texture = day_bed
                 self.bed_sprite.normal_text = day_bed
-            
-            day_bed_hover = self.reg.get('1episode/textures/ui/buttons/hovered/bed_day_hovered.png')
+
+            day_bed_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/bed_day_hovered.png')
             if day_bed_hover:
                 self.bed_sprite.hover_text = day_bed_hover
-            
-            day_door = self.reg.get('1episode/textures/ui/buttons/normal/door_day.png')
+
+            day_door = self.reg.get(
+                '1episode/textures/ui/buttons/normal/door_day.png')
             if day_door:
                 self.door_sprite.texture = day_door
                 self.door_sprite.normal_text = day_door
-            
-            day_door_hover = self.reg.get('1episode/textures/ui/buttons/hovered/door_day_hovered.png')
+
+            day_door_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/door_day_hovered.png')
             if day_door_hover:
                 self.door_sprite.hover_text = day_door_hover
-            
-            day_luke = self.reg.get('1episode/textures/ui/buttons/normal/luke_day.png')
+
+            day_luke = self.reg.get(
+                '1episode/textures/ui/buttons/normal/luke_day.png')
             if day_luke:
                 self.luke_sprite.texture = day_luke
                 self.luke_sprite.normal_text = day_luke
-            
-            day_luke_hover = self.reg.get('1episode/textures/ui/buttons/hovered/luke_day_hovered.png')
+
+            day_luke_hover = self.reg.get(
+                '1episode/textures/ui/buttons/hovered/luke_day_hovered.png')
             if day_luke_hover:
                 self.luke_sprite.hover_text = day_luke_hover
-            
+
             self.is_night = False
             print("Установлены дневные текстуры")
 
@@ -360,12 +366,13 @@ class HouseView(arcade.View):
         if not self.phone_after_days_called:
             print("Запуск телефона после 4 дней")
             self.phone_after_days_called = True
-            
+
             if self.isRinging:
                 self.isRinging = False
                 self.isStartedToRing = False
-                self.window.stop_definite_music('1episode/sounds/sfx/ambient/bringing_phone.wav')
-            
+                self.window.stop_definite_music(
+                    '1episode/sounds/sfx/ambient/bringing_phone.wav')
+
             self.isRinging = True
             self.isStartedToRing = False
             self.time_elapsed = 0
@@ -373,8 +380,7 @@ class HouseView(arcade.View):
 
     def _start_4days_phone_dialog(self):
         self.phone_after_days_called = True
-        
-        # ТОЛЬКО ваш диалог, без других диалогов
+
         self.dialog_box.start_dialogue([
             DialoguePhrase(
                 text="Агу агу агау агуа",
@@ -399,29 +405,29 @@ class HouseView(arcade.View):
         self.bg_list.draw()
         self.interactable_sprites.draw()
         self.dialog_box.draw()
-        
+
         if self.night_fade_alpha > 0:
-            arcade.draw_lrbt_rectangle_filled(
+            arcade.draw_lbwh_rectangle_filled(
                 left=0,
-                right=self.window.width,
                 bottom=0,
-                top=self.window.height,
+                width=self.window.width,
+                height=self.window.height,
                 color=(0, 0, 0, self.night_fade_alpha)
             )
-        
+
         if self.fade_alpha > 0:
-            arcade.draw_lrbt_rectangle_filled(
+            arcade.draw_lbwh_rectangle_filled(
                 left=0,
-                right=self.window.width,
                 bottom=0,
-                top=self.window.height,
+                width=self.window.width,
+                height=self.window.height,
                 color=(0, 0, 0, self.fade_alpha)
             )
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.transition_to_attic or self.transition_to_night or self.isRinging or self.dialog_box.is_active:
             return
-        
+
         for s in [self.bed_sprite, self.door_sprite, self.luke_sprite]:
             s.texture = s.hover_text if s.collides_with_point(
                 (x, y)) else s.normal_text
@@ -429,15 +435,16 @@ class HouseView(arcade.View):
     def on_mouse_press(self, x, y, button, modifiers):
         if self.transition_to_attic or self.transition_to_night or self.dialog_box.is_active:
             return
-        
-        if (self.phone_base_sprite.collides_with_point((x, y)) or 
-            self.phone_tube_sprite.collides_with_point((x, y))) and self.sequence_step != 0.2:
-            
+
+        if (self.phone_base_sprite.collides_with_point((x, y)) or
+                self.phone_tube_sprite.collides_with_point((x, y))) and self.sequence_step != 0.2:
+
             if self.isRinging:
                 self.isRinging = False
                 self.isStartedToRing = False
 
-                self.window.stop_definite_music('1episode/sounds/sfx/ambient/bringing_phone.wav')
+                self.window.stop_definite_music(
+                    '1episode/sounds/sfx/ambient/bringing_phone.wav')
 
                 self.phone_tube_sprite.angle = 0
                 self.update_layout()
@@ -447,45 +454,55 @@ class HouseView(arcade.View):
 
                 if self.day_counter >= self.max_days and not self.phone_after_days_called:
                     self._start_4days_phone_dialog()
-                    return 
-                
-                # Только если НЕ после 4 дней - запускаем обычный сценарий
+                    return
+
                 self.sequence_step = 0.2
                 self.sequence_timer = 0.0
             return
-                
+
         if self.can_interact:
             if self.bed_sprite.collides_with_point((x, y)):
+                if not self.postman_interaction_finished and self.day_counter == 0:
+                    return
+
                 if self.day_counter >= self.max_days and not self.phone_after_days_called:
                     print("Прошло 4 дня")
                     self._trigger_phone_after_days()
                     return
-                
+
                 if self.isRinging:
                     print("Телефон звонит, нельзя спать")
                     return
-                    
-                print(f"Начинается переход день/ночь... (сейчас {'ночь' if self.is_night else 'день'})")
+
+                print(
+                    f"Начинается переход день/ночь... (сейчас {'ночь' if self.is_night else 'день'})")
                 self.transition_to_night = True
                 self.night_transition_timer = 0.0
                 self.night_fade_alpha = 0
                 self.textures_changed = False
-                
+
                 if self.isRinging:
-                    self.window.stop_definite_music('1episode/sounds/sfx/ambient/bringing_phone.wav')
-                    
+                    self.window.stop_definite_music(
+                        '1episode/sounds/sfx/ambient/bringing_phone.wav')
+
             elif self.door_sprite.collides_with_point((x, y)):
                 if self.isRinging:
                     return
-                    
+
+                if self.postman_interaction_finished:
+                    self.window.switch_view('game_backyard_view')
+
                 if self.can_open_door:
                     self.can_open_door = False
-                    self.postman_here = True
                     self.start_dialog(4)
+
             elif self.luke_sprite.collides_with_point((x, y)):
+                if not self.postman_interaction_finished and self.day_counter == 0:
+                    return
+
                 if self.isRinging:
                     return
-                    
+
                 print('Переход на чердак')
                 self.transition_to_attic = True
                 self.transition_timer = 0.0
@@ -493,13 +510,12 @@ class HouseView(arcade.View):
                 pass
 
     def start_dialog(self, t):
-        # ВАЖНО: После 4 дней НЕ запускаем обычные диалоги
         if self.day_counter >= self.max_days and not self.phone_after_days_called:
             return
-            
+
         if self.transition_to_attic or self.transition_to_night or self.isRinging:
             return
-            
+
         if t == 0:
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['calling'][self.language],
@@ -588,7 +604,7 @@ class HouseView(arcade.View):
     def on_key_press(self, key, modifiers):
         if self.transition_to_attic or self.transition_to_night or self.isRinging:
             return
-            
+
         if self.dialog_box.is_active and key in [arcade.key.ENTER, arcade.key.Z]:
             self.dialog_box.next_phrase()
 

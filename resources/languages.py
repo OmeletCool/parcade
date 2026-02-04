@@ -42,6 +42,10 @@ LANGUAGES = {
         'ui_sound_desc': {
             'knocking': ['Стук в дверь. . .', 'A knock at the door. . .', 'Trokitje në derë. . .']
         },
+        'items': {
+            'gate_locked': ['Закрыто. Нужен ключ.', 'Locked. Need a key.', 'Mbyllur.'],
+            'key_used': ['Ключ подошел.', 'The key fits.', 'Qelësi u përshtat.']
+        },
         'postman_talkings': {
             '1': ['Доброго здоровья-с.| Осмелюсь побеспокоить. Не изволите ли вы быть господином Н.?', 'Good day to you, sir. | I beg your pardon for the disturbance. Might you be Mr. N.?', 'Tungjatjeta, zotëri. | Më falni që ju shqetësoj. A do të ishit ju, ndoshta, z. N.?'],
 
@@ -99,9 +103,8 @@ LANGUAGES = {
 
                 '19': ['Но учти, что если ты будешь присылать рядовые снимки предметов,|||| то у тебя будут {color:99,11,15}неприятности{/color}.', 'But keep in mind, if you send us ordinary photos of objects, |||| you will face {color:99,11,15}trouble{/color}.', 'Por ki parasysh, nëse na dërgon foto të zakonshme të objekteve, |||| do të përballeh me {color:99,11,15}vështirësi{/color}.'],
 
-
-
                 '20': ['А как я смогу отличить обычный предмет от аномального?', 'And how am I supposed to tell an ordinary object from an anomalous one?', 'Dhe si mund ta dalloj një objekt të zakonshëm nga një anormal?'],
+
                 '21': ['', '', ''],
                 '22': ['', '', ''],
                 '23': ['', '', ''],

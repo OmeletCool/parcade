@@ -17,6 +17,14 @@ class BaseWindow(arcade.Window):
 
         self.reg = reg
 
+        self.inventory = []
+        self.game_state = {
+            'is_gate_locked': True,
+            'is_gate_open': False,
+            'postman_in_backyard': True,
+            'key_picked_up': False
+        }
+
         self.set_icon(pyglet.image.load(
             "resources/common/textures/ui/icons/icon.jpg"))
 
@@ -60,6 +68,9 @@ class BaseWindow(arcade.Window):
             elif view_name == 'game_house_view':
                 from src.windows.game_window.house_view import HouseView
                 self.views[view_name] = HouseView(self)
+            elif view_name == 'game_backyard_view':
+                from src.windows.game_window.backyard_view import BackyardView
+                self.views[view_name] = BackyardView(self)
 
         return self.views[view_name]
 
