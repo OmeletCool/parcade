@@ -123,18 +123,19 @@ class GameFieldView(arcade.View):
             s.center_x = s.rel_x * w
             s.center_y = s.rel_y * h
 
-    def draw_camera_viewfinder(self):
+    def draw_camera_viewfinder(self, width, height):
         cx, cy = self.window._mouse_x, self.window._mouse_y
-        s = 150
-        w, h = self.window.width, self.window.height
+        sw = width * 0.2
+        sh = height * 0.2
+        w, h = width, height
 
         # Безопасные границы для LRBT
-        l, r = max(0, cx - s), min(w, cx + s)
-        b, t = max(0, cy - s), min(h, cy + s)
+        l, r = max(0, cx - sw), min(w, cx + sw)
+        b, t = max(0, cy - sh), min(h, cy + sh)
 
         # Рамка
         arcade.draw_rect_outline(arcade.rect.XYWH(
-            cx, cy, s*2, s*2), arcade.color.WHITE, 2)
+            cx, cy, sw*2, sh*2), arcade.color.WHITE, 2)
 
         # Шторы (проверка l < r и b < t обязательна)
         if 0 < l:
@@ -160,7 +161,7 @@ class GameFieldView(arcade.View):
             self.spawner.effects_list.draw()
 
             if self.camera_on and self.window.night_data.get("is_night_active"):
-                self.draw_camera_viewfinder()
+                self.draw_camera_viewfinder(self.window.width, self.window.height)
 
             # Рисуем часы и кнопку только ночью
             if self.window.night_data.get("is_night_active"):

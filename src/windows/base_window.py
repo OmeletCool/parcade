@@ -21,7 +21,7 @@ class BaseWindow(arcade.Window):
         self.game_state = {
             'is_gate_locked': True,
             'is_gate_open': False,
-            'postman_in_backyard': True,
+            'postman_in_backyard': False,
             'key_picked_up': False
         }
 
