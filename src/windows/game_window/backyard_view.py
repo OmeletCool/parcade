@@ -20,14 +20,17 @@ class BackyardView(arcade.View):
         self.gate_sprite = None
         self.postman_sprite = None
 
-        self.gate_open_texture = None
-        self.gate_closed_texture = None
+        self.locker_texture_hovered = None
+        self.locker_texture = None
 
         self.dialog_box = DialogBox(
             self.window, default_font_name="Montserrat")
+        
+        self.is_night = self.window.night_data['is_night_active']
 
     def on_show_view(self):
         self.window.background_color = arcade.color.BLACK
+        self.is_night = self.window.night_data['is_night_active']
         self.setup()
 
     def setup(self):
@@ -35,34 +38,58 @@ class BackyardView(arcade.View):
         self.interactable_sprites = arcade.SpriteList()
         self.character_sprites = arcade.SpriteList()
 
-        bg_tex = self.reg.get('1episode/textures/backgrounds/yard_day.png')
+        if self.is_night:
+            bg_tex = self.reg.get('1episode/textures/backgrounds/backjard_night.png')
+            self.locker_texture = self.reg.get('1episode/textures/ui/buttons/normal/locker_night.png')
+            self.locker_texture_hovered = self.reg.get('1episode/textures/ui/buttons/hovered/locker_night_hovered.png')
+        else:
+            bg_tex = self.reg.get('1episode/textures/backgrounds/backjard_day.png')
+            self.locker_texture = self.reg.get('1episode/textures/ui/buttons/normal/locker_day.png')
+            self.locker_texture_hovered = self.reg.get(
+            '1episode/textures/ui/buttons/hovered/locker_day_hovered.png')
+            
         self.bg_sprite = arcade.Sprite(bg_tex)
         self.bg_sprite.position = (
             self.window.width / 2, self.window.height / 2)
+        self.bg_sprite.width = self.window.width
+        self.bg_sprite.height = self.window.height
         self.bg_list.append(self.bg_sprite)
-
-        self.gate_closed_texture = self.reg.get(
-            '1episode/textures/objects/gate_closed.png')
-        self.gate_open_texture = self.reg.get(
-            '1episode/textures/objects/gate_open.png')
-
+        
         is_open = self.window.game_state.get("is_gate_open", False)
-        current_tex = self.gate_open_texture if is_open else self.gate_closed_texture
-
+        current_tex = self.locker_texture_hovered if is_open else self.locker_texture
         self.gate_sprite = arcade.Sprite(current_tex)
-        self.gate_sprite.center_x = self.window.width * 0.85
-        self.gate_sprite.center_y = self.window.height * 0.4
+        self.gate_sprite.center_x = self.window.width * 0.51
+        self.gate_sprite.center_y = self.window.height * 0.337
+        self.gate_sprite.scale_x *= 1.3
+        self.gate_sprite.scale_y *= 1.3
         self.interactable_sprites.append(self.gate_sprite)
 
         if self.window.game_state.get("postman_in_backyard", False):
-            postman_tex = self.reg.get(
-                '1episode/textures/characters/postman_leaning.png')
+            if self.is_night:
+                postman_tex = self.reg.get('1episode/textures/npc/postman_night.png')
+            else:
+                postman_tex = self.reg.get('1episode/textures/npc/postman_day.png')
             self.postman_sprite = arcade.Sprite(postman_tex)
-            self.postman_sprite.center_x = self.gate_sprite.center_x - 50
-            self.postman_sprite.center_y = self.gate_sprite.center_y
+            self.postman_sprite.center_x = self.gate_sprite.center_x - 100
+            self.postman_sprite.center_y = self.gate_sprite.center_y + 15
+            self.postman_sprite.scale_x *= 3
+            self.postman_sprite.scale_y *= 3
             self.character_sprites.append(self.postman_sprite)
 
         self.dialog_box._setup_dimensions()
+    
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
+        self.gate_sprite.center_x = self.window.width * 0.51
+        self.gate_sprite.center_y = self.window.height * 0.337
+        
+        self.bg_sprite.position = (
+            self.window.width / 2, self.window.height / 2)
+        self.bg_sprite.width = self.window.width
+        self.bg_sprite.height = self.window.height
+        
+        self.postman_sprite.center_x = self.gate_sprite.center_x - 100
+        self.postman_sprite.center_y = self.gate_sprite.center_y + 15
 
     def on_draw(self):
         self.clear()
@@ -113,12 +140,12 @@ class BackyardView(arcade.View):
 
         if not is_open:
             self.window.game_state["is_gate_open"] = True
-            self.gate_sprite.texture = self.gate_open_texture
+            self.gate_sprite.texture = self.locker_texture_hovered
             self.window.play_definite_music(
                 'common/sounds/sfx/doors/door_open.wav')
 
         else:
-            self.window.switch_view('game_field_view.py')
+            self.window.switch_view('game_field_view')
 
     def on_key_press(self, key, modifiers):
         if self.dialog_box.is_active and key in [arcade.key.ENTER, arcade.key.Z]:

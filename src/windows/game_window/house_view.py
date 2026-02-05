@@ -50,7 +50,7 @@ class HouseView(arcade.View):
         self.night_transition_timer = 0.0
         self.night_transition_duration = 3.0
         self.night_fade_alpha = 0
-        self.is_night = False
+        self.is_night = self.window.night_data['is_night_active']
         self.textures_changed = False
 
         self.day_counter = 0
@@ -60,9 +60,13 @@ class HouseView(arcade.View):
 
     def on_show_view(self):
         self.window.background_color = arcade.color.BLACK
+        self.is_night = self.window.night_data['is_night_active']
         self.setup()
 
     def setup(self):
+        self.bg_list.clear()
+        self.interactable_sprites.clear()
+        self.fade_list.clear()
         bg_texture = self.reg.get('1episode/textures/intro/room_day.png')
 
         self.bg_sprite = arcade.Sprite(bg_texture)
@@ -181,11 +185,13 @@ class HouseView(arcade.View):
 
         if self.transition_to_attic:
             self.transition_timer += delta_time
-            progress = min(self.transition_timer /
-                           self.transition_duration, 1.0)
+            progress = min(self.transition_timer / self.transition_duration, 1.0)
             self.fade_alpha = int(255 * progress)
             if progress >= 1.0:
-                self.window.switch_view('game_attic_view')
+                self.transition_to_attic = False
+                self.fade_alpha = 0 
+                attic_view = AtticView(self.window)
+                self.window.show_view(attic_view)
                 return
 
         self.update_phone_logic(delta_time)
@@ -281,6 +287,7 @@ class HouseView(arcade.View):
         self.luke_sprite.hover_text = self.reg.get(
             '1episode/textures/ui/buttons/hovered/luke_night_hovered.png')
 
+        self.window.night_data['is_night_active'] = True
         self.is_night = True
 
     def _switch_to_day_textures(self):

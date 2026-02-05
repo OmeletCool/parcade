@@ -19,7 +19,6 @@ class GameFieldView(arcade.View):
         self.window = window
         self.spawner = ItemSpawner(self.window)
 
-        # Инициализация текстов
         self.debug_label = arcade.Text("", 0, 0, arcade.color.YELLOW, 11)
         self.stats_label = arcade.Text("", 0, 0, arcade.color.NEON_GREEN, 11)
         self.time_label = arcade.Text("", 30, 0, arcade.color.WHITE, 20)
@@ -51,32 +50,26 @@ class GameFieldView(arcade.View):
 
     def setup(self):
         self.update_location_visuals()
-        # Принудительно вызываем ресайз при старте, чтобы всё встало на места
         self.on_resize(self.window.width, self.window.height)
 
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
-        # 1. Фон
         for bg in self.bg_list:
             bg.width, bg.height = width, height
             bg.position = (width / 2, height / 2)
 
-        # 2. ПРЕДМЕТЫ (Stage 0 и Stage 1)
         item = self.spawner.active_item
         if item:
             if item.stage == 1:
                 item.center_x, item.center_y = width / 2, height / 2
             else:
-                # Stage 0: двигаем предмет за экраном
                 item.center_x = item.rel_x * width
                 item.center_y = item.rel_y * height
 
-        # 3. НАВИГАЦИЯ (теперь всегда)
         for s in self.navigation_sprites:
             s.center_x = s.rel_x * width
             s.center_y = s.rel_y * height
 
-        # 4. ТЕКСТЫ И ИНТЕРФЕЙС
         self.time_label.y = height - 50
         self.debug_label.position = (width - 250, height - 40)
         self.stats_label.position = (width - 250, height - 60)
@@ -92,7 +85,6 @@ class GameFieldView(arcade.View):
         is_night = self.window.night_data.get("is_night_active", False)
         suffix = "night" if is_night else "day"
 
-        # СТРОГО ТВОЙ ПУТЬ
         path = f'1episode/textures/backgrounds/{self.current_location}_{suffix}.png'
         bg_tex = self.window.reg.get(path)
 
@@ -104,7 +96,6 @@ class GameFieldView(arcade.View):
         else:
             print(f"ОШИБКА: Не найден фон {path}")
 
-        # Навигация
         locs = ['forest', 'edge', 'rocks']
         idx = locs.index(self.current_location)
         w, h = self.window.width, self.window.height
@@ -118,25 +109,22 @@ class GameFieldView(arcade.View):
             n.rel_x, n.rel_y = (w-60)/w, 0.5
             self.navigation_sprites.append(n)
 
-        # Обновляем их позиции сразу
         for s in self.navigation_sprites:
             s.center_x = s.rel_x * w
             s.center_y = s.rel_y * h
 
-    def draw_camera_viewfinder(self):
+    def draw_camera_viewfinder(self, width, height):
         cx, cy = self.window._mouse_x, self.window._mouse_y
-        s = 150
-        w, h = self.window.width, self.window.height
+        sw = width * 0.2
+        sh = height * 0.2
+        w, h = width, height
+        
+        l, r = max(0, cx - sw), min(w, cx + sw)
+        b, t = max(0, cy - sh), min(h, cy + sh)
 
-        # Безопасные границы для LRBT
-        l, r = max(0, cx - s), min(w, cx + s)
-        b, t = max(0, cy - s), min(h, cy + s)
-
-        # Рамка
         arcade.draw_rect_outline(arcade.rect.XYWH(
-            cx, cy, s*2, s*2), arcade.color.WHITE, 2)
+            cx, cy, sw*2, sh*2), arcade.color.WHITE, 2)
 
-        # Шторы (проверка l < r и b < t обязательна)
         if 0 < l:
             arcade.draw_lrbt_rectangle_filled(0, l, 0, h, (0, 0, 0, 230))
         if r < w:
@@ -151,7 +139,6 @@ class GameFieldView(arcade.View):
         self.clear()
         self.bg_list.draw()
 
-        # Если 6 утра, рисуем только фон и диалог (убираем интерфейс камеры и навигацию)
         if self.window.night_data.get("hours") < 6:
             self.navigation_sprites.draw()
             self.spawner.ripples.draw()
@@ -160,14 +147,12 @@ class GameFieldView(arcade.View):
             self.spawner.effects_list.draw()
 
             if self.camera_on and self.window.night_data.get("is_night_active"):
-                self.draw_camera_viewfinder()
+                self.draw_camera_viewfinder(self.window.width, self.window.height)
 
-            # Рисуем часы и кнопку только ночью
             if self.window.night_data.get("is_night_active"):
                 self.time_label.text = f"TIME: {self.window.night_data['current_time']}"
                 self.time_label.draw()
 
-        # 4. Интерфейс (только ночью)
         if self.window.night_data.get("is_night_active"):
             self.time_label.text = f"TIME: {self.window.night_data['current_time']}"
             self.time_label.draw()
@@ -184,7 +169,6 @@ class GameFieldView(arcade.View):
             arcade.draw_circle_outline(
                 self.cam_btn_x, self.cam_btn_y, self.cam_btn_radius, arcade.color.BLACK, 2)
 
-        # 5. Эффекты переходов
         if self.flash_alpha > 0:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.window.width/2, self.window.height/2,
                                     self.window.width, self.window.height), (255, 255, 255, int(self.flash_alpha)))
@@ -199,38 +183,30 @@ class GameFieldView(arcade.View):
     def on_update(self, delta_time):
         if self.dialog_box.is_active:
             self.dialog_box.update(delta_time)
-            return  # Стопим остальную логику, если идет диалог
+            return
 
-        # 2. Стандартный флеш (вспышка камеры)
         if self.flash_alpha > 0:
             self.flash_alpha -= delta_time * 600
 
-        # 3. Логика спавнера и времени
-        # Она сама переключит hours на 6 через 3 секунды после последнего предмета
         self.spawner.update(delta_time, self.current_location,
                             self.camera_on, (self.window._mouse_x, self.window._mouse_y))
 
-        # 4. Проверка наступления 6 утра
         if self.window.night_data.get("hours") >= 6 and not self.end_sequence_triggered:
             self.trigger_end_of_night()
 
-        # 5. Логика фейда (Затемнение/Осветление)
         if self.is_fading:
-            # Затемняемся
             if self.next_location:
                 self.fade_alpha += self.fade_speed * delta_time
                 if self.fade_alpha >= 255:
                     self.fade_alpha = 255
                     self.current_location = self.next_location
                     self.next_location = None
-                    self.update_location_visuals()  # Теперь загрузит дневные текстуры
-            # Осветляемся
+                    self.update_location_visuals()
             else:
                 self.fade_alpha -= self.fade_speed * delta_time
                 if self.fade_alpha <= 0:
                     self.fade_alpha = 0
                     self.is_fading = False
-                    # Когда экран полностью осветлился и наступило утро — запускаем монолог
                     if self.end_sequence_triggered and not self.dialogue_started:
                         self.start_end_monologue()
 
@@ -267,23 +243,18 @@ class GameFieldView(arcade.View):
             if self.window.night_data.get("hours", 0) >= 6:
                 return
 
-            # Вспышка и звук только при наличии цели в Stage 1
             if item and item.stage == 1:
                 if math.dist((x, y), (item.center_x, item.center_y)) < 150:
-                    self.flash_alpha = 255  # Вспышка ТЕПЕРЬ ТОЛЬКО ЗДЕСЬ
+                    self.flash_alpha = 255 
                     print("📸 CLICK! Попадание!")
                     self.spawner.resolve_item(photographed=True)
                 else:
-                    # Промах — вспышки нет, просто принт для дебага
                     print("☁️ Мимо, вспышка не сработала")
 
     def trigger_end_of_night(self):
-        """Запускает процесс перехода в утро"""
         self.end_sequence_triggered = True
-        # Перезагружаем текущую локу, но уже 'day'
         self.next_location = self.current_location
         self.is_fading = True
-        # Важно: принудительно ставим ночь в False, чтобы update_location_visuals выбрал 'day'
         self.window.night_data["is_night_active"] = False
 
     def start_end_monologue(self):
