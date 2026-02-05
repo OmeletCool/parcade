@@ -36,13 +36,11 @@ class AtticView(arcade.View):
         self.setup()
 
     def setup(self):
-        # Загружаем фон если еще не загружен
         if not self.bg_sprite:
             attic_texture = self.reg.get('1episode/textures/backgrounds/attic.png')
             self.bg_sprite = arcade.Sprite(attic_texture)
             self.bg_list.append(self.bg_sprite)
 
-        # Загружаем ключ только если он еще не подобран
         if (not self.window.game_state.get("key_picked_up", False) 
                 and not self.key_sprite):
             self.key_sprite = arcade.Sprite(
@@ -66,7 +64,6 @@ class AtticView(arcade.View):
         self.dialog_box._setup_dimensions()
 
     def on_update(self, delta_time):
-        # Fade-in при входе
         if self.fade_in:
             self.fade_in_timer += delta_time
             progress = min(self.fade_in_timer / self.fade_in_duration, 1.0)
@@ -75,17 +72,14 @@ class AtticView(arcade.View):
                 self.fade_in = False
                 self.fade_in_alpha = 0
 
-        # Переход обратно в дом
         if self.transition_to_house:
             self.transition_timer += delta_time
             progress = min(self.transition_timer / self.transition_duration, 1.0)
             self.fade_alpha = int(255 * progress)
             
             if progress >= 1.0:
-                # Полностью затемнили - переключаемся
                 self.transition_to_house = False
                 self.fade_alpha = 0
-                # Используем switch_view который должен сохранять состояние
                 self.window.switch_view('game_house_view')
                 return
 

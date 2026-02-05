@@ -189,9 +189,9 @@ class HouseView(arcade.View):
             self.fade_alpha = int(255 * progress)
             if progress >= 1.0:
                 self.transition_to_attic = False
-                self.fade_alpha = 0  # Сбрасываем fade_alpha
-                attic_view = AtticView(self.window)  # Создаем новый экземпляр
-                self.window.show_view(attic_view)    # Прямое переключение
+                self.fade_alpha = 0 
+                attic_view = AtticView(self.window)
+                self.window.show_view(attic_view)
                 return
 
         self.update_phone_logic(delta_time)
