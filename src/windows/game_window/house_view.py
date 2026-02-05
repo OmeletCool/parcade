@@ -58,6 +58,8 @@ class HouseView(arcade.View):
         self.phone_after_days_called = False
         self.dialogue_after_4days_shown = False
 
+        self.night_was = (self.window.night_data['hours'] != 0)
+
     def on_show_view(self):
         self.window.background_color = arcade.color.BLACK
         self.is_night = self.window.night_data['is_night_active']
@@ -67,7 +69,10 @@ class HouseView(arcade.View):
         self.bg_list.clear()
         self.interactable_sprites.clear()
         self.fade_list.clear()
-        bg_texture = self.reg.get('1episode/textures/intro/room_day.png')
+        if self.is_night:
+            bg_texture = self.reg.get('1episode/textures/intro/room_night.png')
+        else:
+            bg_texture = self.reg.get('1episode/textures/intro/room_day.png')
 
         self.bg_sprite = arcade.Sprite(bg_texture)
         self.bg_list.append(self.bg_sprite)
@@ -185,11 +190,12 @@ class HouseView(arcade.View):
 
         if self.transition_to_attic:
             self.transition_timer += delta_time
-            progress = min(self.transition_timer / self.transition_duration, 1.0)
+            progress = min(self.transition_timer /
+                           self.transition_duration, 1.0)
             self.fade_alpha = int(255 * progress)
             if progress >= 1.0:
                 self.transition_to_attic = False
-                self.fade_alpha = 0 
+                self.fade_alpha = 0
                 attic_view = AtticView(self.window)
                 self.window.show_view(attic_view)
                 return
@@ -202,6 +208,9 @@ class HouseView(arcade.View):
                 self.start_dialog(5)
                 self.sequence_step = -1
                 return
+
+            if self.night_was:
+                self.verdict()
 
             if self.sequence_step == 0:
                 self.sequence_timer += delta_time
@@ -244,6 +253,18 @@ class HouseView(arcade.View):
         if self.dialog_finished and not self.dialog_box.is_active:
             if self.can_open_door:
                 self.can_interact = True
+
+    def verdict(self):
+        missed = self.window.night_data['missed_anomalies']
+        caught = self.window.night_data['caught_anomalies']
+        wrong = self.window.night_datas['wrong_photos']
+
+        if caught >= missed + wrong:
+            t = 99
+        else:
+            t = 5
+
+        self.start_dialog(t)
 
     def update_phone_logic(self, delta_time):
         if self.sequence_step == 0.2:
@@ -336,6 +357,8 @@ class HouseView(arcade.View):
 
     def _on_postman_dialogue_end(self):
         self.postman_interaction_finished, self.can_interact, self.can_open_door = True, True, False
+        self.window.play_definite_music(
+            '1episode/sounds/music/home_music.ogg', 0.4, True)
 
     def on_draw(self):
         self.clear()
@@ -468,6 +491,18 @@ class HouseView(arcade.View):
             self.dialog_box.start_dialogue([
                 DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['21'][self.language],
                                voice=Voice.GOVERMENT, logo=Icon.PHONE, callback=self._on_4days_procrastinating)])
+
+        elif t == 99:
+            self.dialog_box.start_dialogue([
+                DialoguePhrase(LANGUAGES['dialogues']['phone_talkings']['1episode']['22']
+                               [self.language], voice=Voice.GOVERMENT, logo=Icon.PHONE, callback=self._on_win)
+            ])
+
+    def on_win(self):
+        self.window.stop_definite_music('1episode/sounds/music/home_music.ogg')
+        self.window.play_definite_music(
+            'common/sounds/music/somethin_final.ogg')
+        self.window.switch_view('creators_window')
 
     def on_key_press(self, key, modifiers):
         if self.dialog_box.is_active and key in [arcade.key.ENTER, arcade.key.Z, arcade.key.SPACE]:

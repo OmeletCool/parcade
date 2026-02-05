@@ -19,8 +19,6 @@ class GameFieldView(arcade.View):
         self.window = window
         self.spawner = ItemSpawner(self.window)
 
-        self.debug_label = arcade.Text("", 0, 0, arcade.color.YELLOW, 11)
-        self.stats_label = arcade.Text("", 0, 0, arcade.color.NEON_GREEN, 11)
         self.time_label = arcade.Text("", 30, 0, arcade.color.WHITE, 20)
         self.morning_msg = arcade.Text(
             "6:00 AM\nПОРА ДОМОЙ", 0, 0, arcade.color.WHITE, 30, align="center", anchor_x="center")
@@ -49,6 +47,12 @@ class GameFieldView(arcade.View):
         self.setup()
 
     def setup(self):
+        is_night = self.window.night_data.get("is_night_active", False)
+        if is_night:
+            self.window.stop_definite_music(
+                '1episode/sounds/music/home_music.ogg')
+            self.window.play_definite_music(
+                'common/sounds/music/somethin_weaky.ogg', 0.7, True)
         self.update_location_visuals()
         self.on_resize(self.window.width, self.window.height)
 
@@ -83,6 +87,7 @@ class GameFieldView(arcade.View):
         self.navigation_sprites.clear()
 
         is_night = self.window.night_data.get("is_night_active", False)
+
         suffix = "night" if is_night else "day"
 
         path = f'1episode/textures/backgrounds/{self.current_location}_{suffix}.png'
@@ -118,7 +123,7 @@ class GameFieldView(arcade.View):
         sw = width * 0.2
         sh = height * 0.2
         w, h = width, height
-        
+
         l, r = max(0, cx - sw), min(w, cx + sw)
         b, t = max(0, cy - sh), min(h, cy + sh)
 
@@ -147,7 +152,8 @@ class GameFieldView(arcade.View):
             self.spawner.effects_list.draw()
 
             if self.camera_on and self.window.night_data.get("is_night_active"):
-                self.draw_camera_viewfinder(self.window.width, self.window.height)
+                self.draw_camera_viewfinder(
+                    self.window.width, self.window.height)
 
             if self.window.night_data.get("is_night_active"):
                 self.time_label.text = f"TIME: {self.window.night_data['current_time']}"
@@ -156,11 +162,6 @@ class GameFieldView(arcade.View):
         if self.window.night_data.get("is_night_active"):
             self.time_label.text = f"TIME: {self.window.night_data['current_time']}"
             self.time_label.draw()
-
-            self.debug_label.text = f"ITEMS LEFT: {self.spawner.items_to_spawn}"
-            self.stats_label.text = f"CAUGHT: {self.spawner.stats['anomalies_caught']}"
-            self.debug_label.draw()
-            self.stats_label.draw()
 
             # Кнопка камеры
             c = arcade.color.GRAY if self.camera_on else arcade.color.WHITE
@@ -220,6 +221,12 @@ class GameFieldView(arcade.View):
         if key in (arcade.key.ENTER, arcade.key.Z):
             self.dialog_box.next_phrase()
 
+        if key == arcade.key.ESCAPE:
+            if not self.window.night_data["is_night_active"] and not self.window.music_player['1episode/sounds/music/home_music.ogg']:
+                self.window.play_definite_music(
+                    '1episode/sounds/music/home_music.ogg', 0.7, True)
+                self.window.switch_view('game_backyard_view')
+
     def on_mouse_press(self, x, y, button, modifiers):
         if math.dist((x, y), (self.cam_btn_x, self.cam_btn_y)) < self.cam_btn_radius:
             self.camera_on = not self.camera_on
@@ -245,7 +252,7 @@ class GameFieldView(arcade.View):
 
             if item and item.stage == 1:
                 if math.dist((x, y), (item.center_x, item.center_y)) < 150:
-                    self.flash_alpha = 255 
+                    self.flash_alpha = 255
                     print("📸 CLICK! Попадание!")
                     self.spawner.resolve_item(photographed=True)
                 else:
@@ -255,7 +262,10 @@ class GameFieldView(arcade.View):
         self.end_sequence_triggered = True
         self.next_location = self.current_location
         self.is_fading = True
+        self.window.stop_definite_music(
+            'common/sounds/music/somethin_weaky.ogg')
         self.window.night_data["is_night_active"] = False
+        self.window.game_state['postman_in_backyard'] = True
 
     def start_end_monologue(self):
         """Запускает финальный текст"""

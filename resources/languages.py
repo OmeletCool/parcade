@@ -56,7 +56,8 @@ LANGUAGES = {
             '3': ['Чрезвычайно рад-с. Имею честь вручить вам корреспонденцию казённой почты.', 'Most delighted, sir. I have the honour of delivering to you official state correspondence.', 'Gëzim i madh, zotëri. Kam nderin t\'ju dorëzoj korrespondencë zyrtare të postës së shtetit.'],
             '4': ['Потрудитесь соблаговолить принять оную и удостоверить факт получения вашей собственноручной росписью в сём формуляре.', 'Kindly deign to accept it and confirm the fact of receipt with your personal signature on this form.', 'Ju lutem të pranoni dhe të vërtetoni marrjen me nënshkrimin tuaj personal në këtë formular.'],
             '5': ['Здесь, под строкой, означенной «получатель»-с.', 'Here, under the line marked «recipient», sir.', 'Këtu, nën vijën e shënuar «marrësi», zotëri.'],
-            '': ['', '', ''],
+
+            '6': ['Ну-съ что же, извольте-съ, я перешлю ваши фотокарточки!', 'Alright then, I shall send your photographs right away!', 'Epo mirë, po i dërgoj fotografitë tuaja!'],
             '': ['', '', ''],
             '': ['', '', ''],
             '': ['', '', ''],
@@ -108,7 +109,8 @@ LANGUAGES = {
                 '20': ['А как я смогу отличить обычный предмет от аномального?', 'And how am I supposed to tell an ordinary object from an anomalous one?', 'Dhe si mund ta dalloj një objekt të zakonshëm nga një anormal?'],
 
                 '21': ['Вы {color:99,11,15}ничтожны{/color}!', 'Нou are {color:99,11,15}insignificant{/color}!', 'ju jeni të {color:99,11,15}parëndësishëm!{/color}!'],
-                '22': ['', '', ''],
+
+                '22': ['Мы получили ваши фото. Поздравляем, ваша 1 ночь удалась', 'We’ve received your photos. Congratulations, your first night was a success!', 'I morëm fotot tuaja. Urime, nata juaj e parë ishte e suksesshme!'],
                 '23': ['', '', ''],
                 '24': ['', '', ''],
                 '25': ['', '', ''],
